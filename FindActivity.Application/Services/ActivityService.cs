@@ -70,6 +70,7 @@ public class ActivityService : IActivityService
         var activity = await _db.Activities
             .Include(a => a.Category)
             .Include(a => a.Participants)
+            .ThenInclude(p => p.User)
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
         if (activity is null)
@@ -79,6 +80,8 @@ public class ActivityService : IActivityService
 
         var joinedCount = activity.Participants.Count(p => p.Status == ParticipantStatus.Joined);
         var isUserJoined = currentUserId != null && activity.Participants.Any(p => p.UserId == currentUserId && p.Status == ParticipantStatus.Joined);
+
+        var joinedParticipants = GetJoinedParticipants(activity);
 
         return new ActivityDetailsDto
         {
@@ -97,7 +100,8 @@ public class ActivityService : IActivityService
             CreatedByUserId = activity.CreatedByUserId,
             Status = activity.Status,
             JoinedCount = joinedCount,
-            IsUserJoined = isUserJoined
+            IsUserJoined = isUserJoined,
+            Participants = joinedParticipants
         };
     }
 
@@ -154,6 +158,34 @@ public class ActivityService : IActivityService
             JoinedCount = a.Participants.Count(p => p.Status == ParticipantStatus.Joined),
             Status = a.Status
         }).ToList();
+    }
+
+    public async Task<IReadOnlyList<ActivityWithParticipantsDto>> GetHostedActivitiesAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var activities = await _db.Activities
+            .AsNoTracking()
+            .Include(a => a.Category)
+            .Include(a => a.Participants)
+            .ThenInclude(p => p.User)
+            .Where(a => a.CreatedByUserId == userId)
+            .OrderByDescending(a => a.StartUtc)
+            .ToListAsync(cancellationToken);
+
+        return activities.Select(MapActivityWithParticipants).ToList();
+    }
+
+    public async Task<IReadOnlyList<ActivityWithParticipantsDto>> GetParticipatingActivitiesAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var activities = await _db.Activities
+            .AsNoTracking()
+            .Include(a => a.Category)
+            .Include(a => a.Participants)
+            .ThenInclude(p => p.User)
+            .Where(a => a.Participants.Any(p => p.UserId == userId && p.Status == ParticipantStatus.Joined))
+            .OrderByDescending(a => a.StartUtc)
+            .ToListAsync(cancellationToken);
+
+        return activities.Select(MapActivityWithParticipants).ToList();
     }
 
     public async Task<bool> JoinAsync(Guid activityId, string userId, CancellationToken cancellationToken = default)
@@ -264,4 +296,50 @@ public class ActivityService : IActivityService
     }
 
     private static double DegreesToRadians(double degrees) => degrees * (Math.PI / 180);
+
+    private static ActivityWithParticipantsDto MapActivityWithParticipants(Activity activity)
+    {
+        return new ActivityWithParticipantsDto
+        {
+            Id = activity.Id,
+            Title = activity.Title,
+            City = activity.City,
+            CategoryName = activity.Category?.Name ?? string.Empty,
+            StartUtc = activity.StartUtc,
+            DurationMinutes = activity.DurationMinutes,
+            Capacity = activity.Capacity,
+            JoinedCount = activity.Participants.Count(p => p.Status == ParticipantStatus.Joined),
+            Status = activity.Status,
+            CreatedByUserId = activity.CreatedByUserId,
+            Participants = GetJoinedParticipants(activity)
+        };
+    }
+
+    private static IReadOnlyList<ParticipantSummaryDto> GetJoinedParticipants(Activity activity)
+    {
+        return activity.Participants
+            .Where(p => p.Status == ParticipantStatus.Joined)
+            .Select(MapParticipant)
+            .OrderBy(p => p.DisplayName)
+            .ToList();
+    }
+
+    private static ParticipantSummaryDto MapParticipant(ActivityParticipant participant)
+    {
+        var user = participant.User;
+        var displayName = user?.DisplayName;
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            displayName = user?.UserName ?? "Unknown";
+        }
+
+        return new ParticipantSummaryDto
+        {
+            UserId = participant.UserId,
+            DisplayName = displayName,
+            Bio = user?.Bio,
+            RatingAvg = user?.RatingAvg ?? 0,
+            RatingCount = user?.RatingCount ?? 0
+        };
+    }
 }

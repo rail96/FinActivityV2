@@ -29,6 +29,48 @@
 
 <p>@Model.Activity.Description</p>
 
+@if (User.Identity?.IsAuthenticated == true && (Model.IsCreator || Model.Activity.IsUserJoined))
+{
+    <div class="mt-4">
+        <h5>Participants</h5>
+        @if (!Model.Activity.Participants.Any())
+        {
+            <p class="text-muted mb-0">No participants yet.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Rating</th>
+                            <th>Bio</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var participant in Model.Activity.Participants)
+                    {
+                        var ratingLabel = participant.RatingCount == 0
+                            ? "No ratings yet"
+                            : $"{participant.RatingAvg:0.0} ({participant.RatingCount})";
+                        <tr>
+                            <td>@participant.DisplayName</td>
+                            <td>@ratingLabel</td>
+                            <td>@(string.IsNullOrWhiteSpace(participant.Bio) ? "—" : participant.Bio)</td>
+                            <td>
+                                <a asp-controller="Profile" asp-action="Details" asp-route-id="@participant.UserId">View profile</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+}
+
 <div class="d-flex gap-2">
     @if (User.Identity?.IsAuthenticated == true)
     {

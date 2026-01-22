@@ -1,0 +1,85 @@
+@model FindActivity.Web.Models.Activities.ActivityListWithParticipantsViewModel
+@{
+    ViewData["Title"] = Model.Heading;
+}
+
+<h1>@Model.Heading</h1>
+
+@if (!Model.Activities.Any())
+{
+    <p class="text-muted">No activities found.</p>
+}
+else
+{
+    @foreach (var activity in Model.Activities)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="card-title mb-1">@activity.Title</h5>
+                        <div class="text-muted">@activity.CategoryName • @activity.City</div>
+                    </div>
+                    <span class="badge bg-secondary">@activity.Status</span>
+                </div>
+
+                <dl class="row mt-3 mb-2">
+                    <dt class="col-sm-3">Start (UTC)</dt>
+                    <dd class="col-sm-9">@activity.StartUtc.ToString("u")</dd>
+                    <dt class="col-sm-3">Duration</dt>
+                    <dd class="col-sm-9">@activity.DurationMinutes minutes</dd>
+                    <dt class="col-sm-3">Capacity</dt>
+                    <dd class="col-sm-9">@activity.JoinedCount / @activity.Capacity</dd>
+                </dl>
+
+                @if (Model.ShowHostLink)
+                {
+                    <div class="mb-2">
+                        <a asp-controller="Profile" asp-action="Details" asp-route-id="@activity.CreatedByUserId">View host profile</a>
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <a asp-action="Details" asp-route-id="@activity.Id">View details</a>
+                </div>
+
+                <h6>Participants</h6>
+                @if (!activity.Participants.Any())
+                {
+                    <p class="text-muted mb-0">No participants yet.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Rating</th>
+                                    <th>Bio</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var participant in activity.Participants)
+                            {
+                                var ratingLabel = participant.RatingCount == 0
+                                    ? "No ratings yet"
+                                    : $"{participant.RatingAvg:0.0} ({participant.RatingCount})";
+                                <tr>
+                                    <td>@participant.DisplayName</td>
+                                    <td>@ratingLabel</td>
+                                    <td>@(string.IsNullOrWhiteSpace(participant.Bio) ? "—" : participant.Bio)</td>
+                                    <td>
+                                        <a asp-controller="Profile" asp-action="Details" asp-route-id="@participant.UserId">View profile</a>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
