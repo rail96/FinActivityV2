@@ -40,6 +40,42 @@ public class ActivitiesController : Controller
         return View(model);
     }
 
+    [Authorize]
+    public async Task<IActionResult> MyHosted(CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return Forbid();
+        }
+
+        var activities = await _activityService.GetHostedActivitiesAsync(userId, cancellationToken);
+        return View(new ActivityListWithParticipantsViewModel
+        {
+            Heading = "My hosted activities",
+            ShowHostLink = false,
+            Activities = activities
+        });
+    }
+
+    [Authorize]
+    public async Task<IActionResult> MyParticipating(CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+        {
+            return Forbid();
+        }
+
+        var activities = await _activityService.GetParticipatingActivitiesAsync(userId, cancellationToken);
+        return View(new ActivityListWithParticipantsViewModel
+        {
+            Heading = "Activities I'm attending",
+            ShowHostLink = true,
+            Activities = activities
+        });
+    }
+
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
