@@ -1,0 +1,72 @@
+@model FindActivity.Web.Models.Activities.ActivityFormViewModel
+@{
+    ViewData["Title"] = "Create Activity";
+}
+
+<h1>Create Activity</h1>
+
+<form asp-action="Create" method="post">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Title</label>
+            <input class="form-control" asp-for="Title" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Category</label>
+            <select class="form-select" asp-for="CategoryId" asp-items="Model.Categories"></select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
+        <div class="col-12">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" asp-for="Description" rows="4"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Start (UTC)</label>
+            <input class="form-control" type="datetime-local" asp-for="StartUtc" />
+            <span asp-validation-for="StartUtc" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Duration (minutes)</label>
+            <input class="form-control" asp-for="DurationMinutes" />
+            <span asp-validation-for="DurationMinutes" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Capacity</label>
+            <input class="form-control" asp-for="Capacity" />
+            <span asp-validation-for="Capacity" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Address</label>
+            <input class="form-control" asp-for="Address" />
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">City</label>
+            <input class="form-control" asp-for="City" />
+            <span asp-validation-for="City" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Lat</label>
+            <input class="form-control" asp-for="Lat" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Lng</label>
+            <input class="form-control" asp-for="Lng" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Minimum age</label>
+            <input class="form-control" asp-for="MinAge" />
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button class="btn btn-primary" type="submit">Create</button>
+        <a class="btn btn-secondary" asp-action="Index">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

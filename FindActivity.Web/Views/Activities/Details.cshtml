@@ -1,0 +1,71 @@
+@model FindActivity.Web.Models.Activities.ActivityDetailsViewModel
+@{
+    ViewData["Title"] = Model.Activity.Title;
+}
+
+<h1>@Model.Activity.Title</h1>
+
+<div class="mb-3">
+    <span class="badge bg-secondary">@Model.Activity.Status</span>
+    <span class="ms-2">@Model.Activity.CategoryName</span>
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Start (UTC)</dt>
+    <dd class="col-sm-9">@Model.Activity.StartUtc.ToString("u")</dd>
+    <dt class="col-sm-3">Duration</dt>
+    <dd class="col-sm-9">@Model.Activity.DurationMinutes minutes</dd>
+    <dt class="col-sm-3">Location</dt>
+    <dd class="col-sm-9">@Model.Activity.Address, @Model.Activity.City</dd>
+    <dt class="col-sm-3">Capacity</dt>
+    <dd class="col-sm-9">@Model.Activity.JoinedCount / @Model.Activity.Capacity</dd>
+    <dt class="col-sm-3">Minimum age</dt>
+    <dd class="col-sm-9">@Model.Activity.MinAge?.ToString() ?? "None"</dd>
+    <dt class="col-sm-3">Host</dt>
+    <dd class="col-sm-9">
+        <a asp-controller="Profile" asp-action="Details" asp-route-id="@Model.Activity.CreatedByUserId">View profile</a>
+    </dd>
+</dl>
+
+<p>@Model.Activity.Description</p>
+
+<div class="d-flex gap-2">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        if (Model.IsCreator && Model.Activity.Status == FindActivity.Domain.Enums.ActivityStatus.Scheduled)
+        {
+            <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Activity.Id">Edit</a>
+            <form asp-action="Cancel" asp-route-id="@Model.Activity.Id" method="post">
+                <button class="btn btn-outline-danger" type="submit">Cancel activity</button>
+            </form>
+            if (Model.Activity.StartUtc.AddMinutes(Model.Activity.DurationMinutes) <= DateTime.UtcNow)
+            {
+                <form asp-action="Complete" asp-route-id="@Model.Activity.Id" method="post">
+                    <button class="btn btn-outline-success" type="submit">Mark complete</button>
+                </form>
+            }
+        }
+        else if (Model.Activity.Status == FindActivity.Domain.Enums.ActivityStatus.Scheduled)
+        {
+            if (Model.Activity.IsUserJoined)
+            {
+                <form asp-action="Leave" asp-route-id="@Model.Activity.Id" method="post">
+                    <button class="btn btn-warning" type="submit">Leave</button>
+                </form>
+            }
+            else
+            {
+                <form asp-action="Join" asp-route-id="@Model.Activity.Id" method="post">
+                    <button class="btn btn-success" type="submit">Join</button>
+                </form>
+            }
+        }
+    }
+</div>
+
+@if (Model.CanReviewHost)
+{
+    <div class="mt-4">
+        <a class="btn btn-primary" asp-controller="Reviews" asp-action="Create" asp-route-activityId="@Model.Activity.Id">Leave a review for host</a>
+    </div>
+}

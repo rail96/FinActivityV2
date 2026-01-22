@@ -1,0 +1,37 @@
+@model FindActivity.Web.Models.Profile.ProfileDetailsViewModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<h1>@(Model.User.DisplayName ?? Model.User.UserName)</h1>
+
+<p>@Model.User.Bio</p>
+
+<dl class="row">
+    <dt class="col-sm-3">Birth date</dt>
+    <dd class="col-sm-9">@Model.User.BirthDate?.ToString("yyyy-MM-dd") ?? "N/A"</dd>
+    <dt class="col-sm-3">Rating</dt>
+    <dd class="col-sm-9">@Model.User.RatingAvg.ToString("0.0") (@Model.User.RatingCount)</dd>
+</dl>
+
+<h3>Reviews</h3>
+@if (Model.Reviews.Count == 0)
+{
+    <p>No reviews yet.</p>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var review in Model.Reviews)
+        {
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <strong>Rating: @review.Rating</strong>
+                    <span class="text-muted">@review.CreatedUtc.ToString("u")</span>
+                </div>
+                <p class="mb-1">@review.Comment</p>
+                <a asp-controller="Activities" asp-action="Details" asp-route-id="@review.ActivityId">View activity</a>
+            </div>
+        }
+    </div>
+}

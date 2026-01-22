@@ -1,0 +1,74 @@
+@model FindActivity.Web.Models.Activities.ActivitySearchViewModel
+@{
+    ViewData["Title"] = "Activities";
+}
+
+<h1>Activities</h1>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+        <label class="form-label">City</label>
+        <input class="form-control" asp-for="City" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Category</label>
+        <select class="form-select" asp-for="CategoryId" asp-items="Model.Categories">
+            <option value="">All</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Start from (UTC)</label>
+        <input class="form-control" type="datetime-local" asp-for="StartUtcFrom" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Start to (UTC)</label>
+        <input class="form-control" type="datetime-local" asp-for="StartUtcTo" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Lat</label>
+        <input class="form-control" asp-for="Lat" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Lng</label>
+        <input class="form-control" asp-for="Lng" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Radius (km)</label>
+        <input class="form-control" asp-for="RadiusKm" />
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+</form>
+
+<div class="mb-3">
+    <a class="btn btn-success" asp-action="Create">Create activity</a>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>City</th>
+            <th>Category</th>
+            <th>Start (UTC)</th>
+            <th>Capacity</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Results)
+    {
+        <tr>
+            <td>@item.Title</td>
+            <td>@item.City</td>
+            <td>@item.CategoryName</td>
+            <td>@item.StartUtc.ToString("u")</td>
+            <td>@item.JoinedCount / @item.Capacity</td>
+            <td>@item.Status</td>
+            <td><a asp-action="Details" asp-route-id="@item.Id">Details</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
