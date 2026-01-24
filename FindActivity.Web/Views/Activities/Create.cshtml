@@ -1,6 +1,8 @@
 @model FindActivity.Web.Models.Activities.ActivityFormViewModel
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = "Create Activity";
+    var mapboxToken = Configuration["Mapbox:AccessToken"];
 }
 
 <h1>Create Activity</h1>
@@ -38,22 +40,31 @@
             <span asp-validation-for="Capacity" class="text-danger"></span>
         </div>
         <div class="col-md-6">
-            <label class="form-label">Address</label>
-            <input class="form-control" asp-for="Address" />
-            <span asp-validation-for="Address" class="text-danger"></span>
-        </div>
-        <div class="col-md-6">
             <label class="form-label">City</label>
-            <input class="form-control" asp-for="City" />
+            <input class="form-control" asp-for="City" data-city-input readonly />
             <span asp-validation-for="City" class="text-danger"></span>
         </div>
-        <div class="col-md-3">
-            <label class="form-label">Lat</label>
-            <input class="form-control" asp-for="Lat" />
+        <div class="col-md-6">
+            <label class="form-label">State</label>
+            <input class="form-control" asp-for="State" data-state-input readonly />
+            <span asp-validation-for="State" class="text-danger"></span>
         </div>
-        <div class="col-md-3">
-            <label class="form-label">Lng</label>
-            <input class="form-control" asp-for="Lng" />
+        <div class="col-md-6 position-relative" data-address-autocomplete data-mapbox-token="@mapboxToken">
+            <label class="form-label">Address</label>
+            <input class="form-control" asp-for="Address" data-address-input autocomplete="off" />
+            <input type="hidden" asp-for="AddressPlaceId" data-place-id-input />
+            <div class="list-group position-absolute w-100 shadow-sm d-none" data-address-suggestions></div>
+            <small class="text-muted d-block mt-1" data-address-help>
+                @if (string.IsNullOrWhiteSpace(mapboxToken))
+                {
+                    @:Mapbox token missing on server. Suggestions disabled.
+                }
+                else
+                {
+                    @:Select a suggested Washington address.
+                }
+            </small>
+            <span asp-validation-for="Address" class="text-danger"></span>
         </div>
         <div class="col-md-3">
             <label class="form-label">Minimum age</label>

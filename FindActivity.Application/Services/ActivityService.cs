@@ -27,8 +27,8 @@ public class ActivityService : IActivityService
             DurationMinutes = dto.DurationMinutes,
             Address = dto.Address.Trim(),
             City = dto.City.Trim(),
-            Lat = dto.Lat,
-            Lng = dto.Lng,
+            State = dto.State.Trim(),
+            AddressPlaceId = dto.AddressPlaceId?.Trim(),
             Capacity = dto.Capacity,
             MinAge = dto.MinAge,
             CreatedByUserId = userId,
@@ -56,8 +56,8 @@ public class ActivityService : IActivityService
         activity.DurationMinutes = dto.DurationMinutes;
         activity.Address = dto.Address.Trim();
         activity.City = dto.City.Trim();
-        activity.Lat = dto.Lat;
-        activity.Lng = dto.Lng;
+        activity.State = dto.State.Trim();
+        activity.AddressPlaceId = dto.AddressPlaceId?.Trim();
         activity.Capacity = dto.Capacity;
         activity.MinAge = dto.MinAge;
 
@@ -93,8 +93,8 @@ public class ActivityService : IActivityService
             DurationMinutes = activity.DurationMinutes,
             Address = activity.Address,
             City = activity.City,
-            Lat = activity.Lat,
-            Lng = activity.Lng,
+            State = activity.State,
+            AddressPlaceId = activity.AddressPlaceId,
             Capacity = activity.Capacity,
             MinAge = activity.MinAge,
             CreatedByUserId = activity.CreatedByUserId,
@@ -138,19 +138,13 @@ public class ActivityService : IActivityService
             .OrderBy(a => a.StartUtc)
             .ToListAsync(cancellationToken);
 
-        if (filters.Lat.HasValue && filters.Lng.HasValue && filters.RadiusKm.HasValue)
-        {
-            results = results
-                .Where(a => a.Lat.HasValue && a.Lng.HasValue)
-                .Where(a => GetDistanceKm(filters.Lat.Value, filters.Lng.Value, a.Lat!.Value, a.Lng!.Value) <= filters.RadiusKm.Value)
-                .ToList();
-        }
-
         return results.Select(a => new ActivityListItemDto
         {
             Id = a.Id,
             Title = a.Title,
+            Address = a.Address,
             City = a.City,
+            State = a.State,
             CategoryName = a.Category?.Name ?? string.Empty,
             StartUtc = a.StartUtc,
             DurationMinutes = a.DurationMinutes,
@@ -282,21 +276,6 @@ public class ActivityService : IActivityService
         return true;
     }
 
-    private static double GetDistanceKm(double lat1, double lon1, double lat2, double lon2)
-    {
-        const double radius = 6371;
-        var dLat = DegreesToRadians(lat2 - lat1);
-        var dLon = DegreesToRadians(lon2 - lon1);
-        var a =
-            Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-            Math.Cos(DegreesToRadians(lat1)) * Math.Cos(DegreesToRadians(lat2)) *
-            Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return radius * c;
-    }
-
-    private static double DegreesToRadians(double degrees) => degrees * (Math.PI / 180);
-
     private static ActivityWithParticipantsDto MapActivityWithParticipants(Activity activity)
     {
         return new ActivityWithParticipantsDto
@@ -304,6 +283,7 @@ public class ActivityService : IActivityService
             Id = activity.Id,
             Title = activity.Title,
             City = activity.City,
+            State = activity.State,
             CategoryName = activity.Category?.Name ?? string.Empty,
             StartUtc = activity.StartUtc,
             DurationMinutes = activity.DurationMinutes,

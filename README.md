@@ -40,5 +40,6 @@ dotnet run --project FindActivity.Web
 Open the URL shown in the console (typically `https://localhost:7xxx`).
 
 ## Notes
+- Add a Mapbox access token in `FindActivity.Web/appsettings.Development.json` under `Mapbox:AccessToken` to enable address autocomplete and the map.
 - Categories are seeded automatically on first migration.
 - Reviews are only allowed after the activity is completed and the user joined.

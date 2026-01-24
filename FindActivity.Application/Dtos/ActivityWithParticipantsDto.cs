@@ -7,6 +7,7 @@ public class ActivityWithParticipantsDto
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
+    public string State { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
     public DateTime StartUtc { get; set; }
     public int DurationMinutes { get; set; }

@@ -20,3 +20,19 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.activity-map {
+  width: 100%;
+  height: 420px;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+}
+
+[data-address-suggestions] {
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 1050;
+  background-color: #fff;
+  top: 100%;
+  left: 0;
+}
