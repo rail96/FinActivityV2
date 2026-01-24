@@ -15,8 +15,8 @@ public class Activity
     public int DurationMinutes { get; set; }
     public string Address { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
-    public double? Lat { get; set; }
-    public double? Lng { get; set; }
+    public string State { get; set; } = string.Empty;
+    public string? AddressPlaceId { get; set; }
     public int Capacity { get; set; }
     public int? MinAge { get; set; }
     public string CreatedByUserId { get; set; } = string.Empty;

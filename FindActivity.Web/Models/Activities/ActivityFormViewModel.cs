@@ -34,8 +34,12 @@ public class ActivityFormViewModel
     [StringLength(120)]
     public string City { get; set; } = string.Empty;
 
-    public double? Lat { get; set; }
-    public double? Lng { get; set; }
+    [Required]
+    [StringLength(80)]
+    public string State { get; set; } = string.Empty;
+
+    [StringLength(150)]
+    public string AddressPlaceId { get; set; } = string.Empty;
 
     [Range(1, 5000)]
     public int Capacity { get; set; } = 10;

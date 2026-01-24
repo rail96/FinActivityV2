@@ -13,6 +13,8 @@ public class ActivityConfiguration : IEntityTypeConfiguration<Activity>
         builder.Property(a => a.Description).HasMaxLength(2000).IsRequired();
         builder.Property(a => a.Address).HasMaxLength(300).IsRequired();
         builder.Property(a => a.City).HasMaxLength(120).IsRequired();
+        builder.Property(a => a.State).HasMaxLength(80).IsRequired();
+        builder.Property(a => a.AddressPlaceId).HasMaxLength(150);
         builder.Property(a => a.CreatedByUserId).HasMaxLength(450).IsRequired();
 
         builder.HasIndex(a => a.City);

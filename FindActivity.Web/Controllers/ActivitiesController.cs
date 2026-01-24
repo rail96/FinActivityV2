@@ -29,10 +29,7 @@ public class ActivitiesController : Controller
             City = model.City,
             CategoryId = model.CategoryId,
             StartUtcFrom = model.StartUtcFrom,
-            StartUtcTo = model.StartUtcTo,
-            Lat = model.Lat,
-            Lng = model.Lng,
-            RadiusKm = model.RadiusKm
+            StartUtcTo = model.StartUtcTo
         };
 
         model.Results = await _activityService.SearchAsync(filters, cancellationToken);
@@ -118,6 +115,11 @@ public class ActivitiesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ActivityFormViewModel model, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(model.AddressPlaceId))
+        {
+            ModelState.AddModelError(nameof(model.Address), "Select an address from the suggested results.");
+        }
+
         if (!ModelState.IsValid)
         {
             model.Categories = await GetCategoriesAsync(cancellationToken);
@@ -139,8 +141,8 @@ public class ActivitiesController : Controller
             DurationMinutes = model.DurationMinutes,
             Address = model.Address,
             City = model.City,
-            Lat = model.Lat,
-            Lng = model.Lng,
+            State = model.State,
+            AddressPlaceId = model.AddressPlaceId,
             Capacity = model.Capacity,
             MinAge = model.MinAge
         }, userId, cancellationToken);
@@ -168,8 +170,8 @@ public class ActivitiesController : Controller
             DurationMinutes = activity.DurationMinutes,
             Address = activity.Address,
             City = activity.City,
-            Lat = activity.Lat,
-            Lng = activity.Lng,
+            State = activity.State,
+            AddressPlaceId = activity.AddressPlaceId ?? string.Empty,
             Capacity = activity.Capacity,
             MinAge = activity.MinAge,
             Categories = await GetCategoriesAsync(cancellationToken)
@@ -183,6 +185,11 @@ public class ActivitiesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(ActivityFormViewModel model, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(model.AddressPlaceId))
+        {
+            ModelState.AddModelError(nameof(model.Address), "Select an address from the suggested results.");
+        }
+
         if (!ModelState.IsValid)
         {
             model.Categories = await GetCategoriesAsync(cancellationToken);
@@ -205,8 +212,8 @@ public class ActivitiesController : Controller
             DurationMinutes = model.DurationMinutes,
             Address = model.Address,
             City = model.City,
-            Lat = model.Lat,
-            Lng = model.Lng,
+            State = model.State,
+            AddressPlaceId = model.AddressPlaceId,
             Capacity = model.Capacity,
             MinAge = model.MinAge
         }, userId, cancellationToken);

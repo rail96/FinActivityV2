@@ -9,9 +9,6 @@ public class ActivitySearchViewModel
     public int? CategoryId { get; set; }
     public DateTime? StartUtcFrom { get; set; }
     public DateTime? StartUtcTo { get; set; }
-    public double? Lat { get; set; }
-    public double? Lng { get; set; }
-    public double? RadiusKm { get; set; }
 
     public IReadOnlyList<ActivityListItemDto> Results { get; set; } = Array.Empty<ActivityListItemDto>();
     public IEnumerable<SelectListItem> Categories { get; set; } = Array.Empty<SelectListItem>();
