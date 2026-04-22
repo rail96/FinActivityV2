@@ -9,7 +9,7 @@
 
 <dl class="row">
     <dt class="col-sm-3">Birth date</dt>
-    <dd class="col-sm-9">@Model.User.BirthDate?.ToString("yyyy-MM-dd") ?? "N/A"</dd>
+    <dd class="col-sm-9">@(Model.User.BirthDate?.ToString("yyyy-MM-dd") ?? "N/A")</dd>
     <dt class="col-sm-3">Rating</dt>
     <dd class="col-sm-9">@Model.User.RatingAvg.ToString("0.0") (@Model.User.RatingCount)</dd>
 </dl>

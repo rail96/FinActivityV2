@@ -120,6 +120,11 @@ public class ActivitiesController : Controller
             ModelState.AddModelError(nameof(model.Address), "Select an address from the suggested results.");
         }
 
+        if (model.StartUtc <= DateTime.UtcNow)
+        {
+            ModelState.AddModelError(nameof(model.StartUtc), "Start time must be in the future.");
+        }
+
         if (!ModelState.IsValid)
         {
             model.Categories = await GetCategoriesAsync(cancellationToken);
@@ -188,6 +193,22 @@ public class ActivitiesController : Controller
         if (string.IsNullOrWhiteSpace(model.AddressPlaceId))
         {
             ModelState.AddModelError(nameof(model.Address), "Select an address from the suggested results.");
+        }
+
+        if (model.StartUtc <= DateTime.UtcNow)
+        {
+            ModelState.AddModelError(nameof(model.StartUtc), "Start time must be in the future.");
+        }
+
+        if (model.Id is not null)
+        {
+            var currentJoined = await _db.ActivityParticipants
+                .CountAsync(p => p.ActivityId == model.Id.Value && p.Status == ParticipantStatus.Joined, cancellationToken);
+            if (model.Capacity < currentJoined)
+            {
+                ModelState.AddModelError(nameof(model.Capacity),
+                    $"Capacity can't be below the current joined participants ({currentJoined}).");
+            }
         }
 
         if (!ModelState.IsValid)

@@ -1,13 +1,10 @@
-using FindActivity.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace FindActivity.Infrastructure.Data.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
-    [Migration("20260122123000_AddStateToActivities")]
+    /// <inheritdoc />
     public partial class AddStateToActivities : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
