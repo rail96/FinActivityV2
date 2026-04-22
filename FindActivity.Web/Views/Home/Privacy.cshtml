@@ -1,6 +1,33 @@
-﻿@{
+@{
     ViewData["Title"] = "Privacy Policy";
 }
 <h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<p class="lead">
+    FindActivity is an MVP for hosting and discovering local activities. This page describes what
+    data we collect and how we use it. Replace this copy with your production policy before launch.
+</p>
+
+<h2>Information we collect</h2>
+<ul>
+    <li><strong>Account data</strong> &mdash; email, display name, optional bio and birth date.</li>
+    <li><strong>Activity data</strong> &mdash; activities you create or join, including title, description, location, and timing.</li>
+    <li><strong>Reviews and ratings</strong> &mdash; reviews you leave for hosts after attending a completed activity.</li>
+    <li><strong>Technical data</strong> &mdash; standard web-server logs (IP address, user agent, timestamps) for security and debugging.</li>
+</ul>
+
+<h2>How we use it</h2>
+<p>
+    We use your data to operate the service: showing activities near you, letting hosts and
+    participants find each other, and preventing abuse. We do not sell your data. Location
+    autocomplete and the map use the Mapbox Geocoding API &mdash; addresses you type may be
+    sent to Mapbox under their terms.
+</p>
+
+<h2>Your choices</h2>
+<p>
+    You can edit or delete your account from the account management pages. To request a full
+    export or deletion of your data, contact the site administrator.
+</p>
+
+<p class="text-muted">Last updated: @DateTime.UtcNow.ToString("yyyy-MM-dd")</p>
