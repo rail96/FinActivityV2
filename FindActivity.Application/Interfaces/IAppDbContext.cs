@@ -9,6 +9,7 @@ public interface IAppDbContext
     DbSet<ActivityParticipant> ActivityParticipants { get; }
     DbSet<Review> Reviews { get; }
     DbSet<Category> Categories { get; }
+    DbSet<Report> Reports { get; }
     DbSet<ApplicationUser> Users { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

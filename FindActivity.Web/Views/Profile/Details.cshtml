@@ -1,6 +1,21 @@
 @model FindActivity.Web.Models.Profile.ProfileDetailsViewModel
+@using FindActivity.Domain.Enums
+@using FindActivity.Web.Models.Reports
 @{
     ViewData["Title"] = "Profile";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var canReportUser = User.Identity?.IsAuthenticated == true
+                        && currentUserId is not null
+                        && Model.User.Id != currentUserId;
+}
+
+@if (TempData["ReportSuccess"] is string reportSuccess)
+{
+    <div class="alert alert-success" role="alert">@reportSuccess</div>
+}
+@if (TempData["ReportError"] is string reportError)
+{
+    <div class="alert alert-danger" role="alert">@reportError</div>
 }
 
 <h1>@(Model.User.DisplayName ?? Model.User.UserName)</h1>
@@ -34,4 +49,20 @@ else
             </div>
         }
     </div>
+}
+
+@if (canReportUser)
+{
+    var reportModel = new ReportCreateViewModel
+    {
+        TargetType = ReportTargetType.User,
+        TargetUserId = Model.User.Id,
+        ReturnUrl = Url.Action("Details", "Profile", new { id = Model.User.Id })
+    };
+    <div class="mt-4">
+        <button type="button" class="btn btn-link text-muted p-0" data-bs-toggle="modal" data-bs-target="#reportModal">
+            Report this user
+        </button>
+    </div>
+    <partial name="_ReportModal" model="reportModel" />
 }

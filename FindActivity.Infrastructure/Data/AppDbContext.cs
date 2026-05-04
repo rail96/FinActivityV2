@@ -15,6 +15,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>, IAppDbContext
     public DbSet<ActivityParticipant> ActivityParticipants => Set<ActivityParticipant>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Report> Reports => Set<Report>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
