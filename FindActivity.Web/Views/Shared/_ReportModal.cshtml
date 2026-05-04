@@ -1,0 +1,70 @@
+@model FindActivity.Web.Models.Reports.ReportCreateViewModel
+@using FindActivity.Domain.Enums
+
+@*
+    Reusable Bootstrap modal that submits a report. Render via:
+        <partial name="_ReportModal" model="new ReportCreateViewModel { TargetType = ..., TargetActivityId = ..., ReturnUrl = ... }" />
+        <button type="button" class="btn btn-link text-muted" data-bs-toggle="modal" data-bs-target="#reportModal">Report</button>
+*@
+
+@{
+    var reasonOptions = new (ReportReason Value, string Label)[]
+    {
+        (ReportReason.Sexual,           "Sexual / inappropriate"),
+        (ReportReason.Harassment,       "Harassment or bullying"),
+        (ReportReason.Hate,             "Hate speech or discrimination"),
+        (ReportReason.Spam,             "Spam or self-promotion"),
+        (ReportReason.Illegal,          "Illegal activity"),
+        (ReportReason.EndangersMinors,  "Endangers minors"),
+        (ReportReason.Misleading,       "Misleading or fraudulent"),
+        (ReportReason.Other,            "Other")
+    };
+
+    var targetLabel = Model.TargetType == ReportTargetType.User ? "user" : "activity";
+}
+
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form asp-controller="Reports" asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="TargetType" />
+            <input type="hidden" asp-for="TargetActivityId" />
+            <input type="hidden" asp-for="TargetUserId" />
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="reportModalLabel">Report this @targetLabel</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">
+                        Reports are reviewed by our moderation team. Misuse of reports may result in action against your own account.
+                    </p>
+
+                    <div class="mb-3">
+                        <label asp-for="Reason" class="form-label">Reason</label>
+                        <select asp-for="Reason" class="form-select" required>
+                            @foreach (var option in reasonOptions)
+                            {
+                                <option value="@((int)option.Value)">@option.Label</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Reason" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Details" class="form-label">Details (optional)</label>
+                        <textarea asp-for="Details" class="form-control" rows="4" maxlength="2000"
+                                  placeholder="Anything that helps us understand the issue."></textarea>
+                        <span asp-validation-for="Details" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Submit report</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

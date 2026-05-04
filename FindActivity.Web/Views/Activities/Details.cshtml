@@ -1,6 +1,21 @@
 @model FindActivity.Web.Models.Activities.ActivityDetailsViewModel
+@using FindActivity.Domain.Enums
+@using FindActivity.Web.Models.Reports
 @{
     ViewData["Title"] = Model.Activity.Title;
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var canReportActivity = User.Identity?.IsAuthenticated == true
+                            && currentUserId is not null
+                            && Model.Activity.CreatedByUserId != currentUserId;
+}
+
+@if (TempData["ReportSuccess"] is string reportSuccess)
+{
+    <div class="alert alert-success" role="alert">@reportSuccess</div>
+}
+@if (TempData["ReportError"] is string reportError)
+{
+    <div class="alert alert-danger" role="alert">@reportError</div>
 }
 
 <h1>@Model.Activity.Title</h1>
@@ -110,4 +125,20 @@
     <div class="mt-4">
         <a class="btn btn-primary" asp-controller="Reviews" asp-action="Create" asp-route-activityId="@Model.Activity.Id">Leave a review for host</a>
     </div>
+}
+
+@if (canReportActivity)
+{
+    var reportModel = new ReportCreateViewModel
+    {
+        TargetType = ReportTargetType.Activity,
+        TargetActivityId = Model.Activity.Id,
+        ReturnUrl = Url.Action("Details", "Activities", new { id = Model.Activity.Id })
+    };
+    <div class="mt-4">
+        <button type="button" class="btn btn-link text-muted p-0" data-bs-toggle="modal" data-bs-target="#reportModal">
+            Report this activity
+        </button>
+    </div>
+    <partial name="_ReportModal" model="reportModel" />
 }
