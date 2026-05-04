@@ -35,7 +35,7 @@
     <dt class="col-sm-3">Capacity</dt>
     <dd class="col-sm-9">@Model.Activity.JoinedCount / @Model.Activity.Capacity</dd>
     <dt class="col-sm-3">Minimum age</dt>
-    <dd class="col-sm-9">@Model.Activity.MinAge?.ToString() ?? "None"</dd>
+    <dd class="col-sm-9">@(Model.Activity.MinAge?.ToString() ?? "None")</dd>
     <dt class="col-sm-3">Host</dt>
     <dd class="col-sm-9">
         <a asp-controller="Profile" asp-action="Details" asp-route-id="@Model.Activity.CreatedByUserId">View profile</a>
