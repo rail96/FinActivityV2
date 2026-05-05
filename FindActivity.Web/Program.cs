@@ -37,6 +37,12 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
 builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection("SendGrid"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+// Higher-level activity notifications (RSVP, cancellation, reminders).
+builder.Services.AddTransient<INotificationService, NotificationService>();
+
+// Sends a reminder email ~24 hours before each scheduled activity starts.
+builder.Services.AddHostedService<ActivityReminderService>();
+
 builder.Services.AddApplication();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
