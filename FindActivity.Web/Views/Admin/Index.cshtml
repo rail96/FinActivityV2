@@ -1,0 +1,83 @@
+@model FindActivity.Web.Models.Admin.AdminReportsIndexViewModel
+@using FindActivity.Domain.Enums
+@{
+    ViewData["Title"] = "Admin · Reports";
+}
+
+<h1>Reports</h1>
+
+@if (TempData["AdminMessage"] is string adminMsg)
+{
+    <div class="alert alert-success" role="alert">@adminMsg</div>
+}
+
+<ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+        <a class="nav-link @(Model.FilterStatus == ReportStatus.Open ? "active" : "")"
+           asp-action="Index" asp-route-status="@((int)ReportStatus.Open)">
+            Open <span class="badge bg-light text-dark">@Model.OpenCount</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(Model.FilterStatus == ReportStatus.ActionTaken ? "active" : "")"
+           asp-action="Index" asp-route-status="@((int)ReportStatus.ActionTaken)">
+            Action taken <span class="badge bg-light text-dark">@Model.ActionTakenCount</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(Model.FilterStatus == ReportStatus.Dismissed ? "active" : "")"
+           asp-action="Index" asp-route-status="@((int)ReportStatus.Dismissed)">
+            Dismissed <span class="badge bg-light text-dark">@Model.DismissedCount</span>
+        </a>
+    </li>
+</ul>
+
+@if (!Model.Reports.Any())
+{
+    <p class="text-muted">No reports in this view.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Filed</th>
+                    <th>Type</th>
+                    <th>Target</th>
+                    <th>Reason</th>
+                    <th>Reporter</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.Reports)
+            {
+                <tr>
+                    <td><span title="@item.CreatedUtc.ToString("u")">@item.CreatedUtc.ToString("MMM d, HH:mm")</span></td>
+                    <td>@item.TargetType</td>
+                    <td>
+                        @if (item.TargetType == ReportTargetType.Activity && item.TargetActivityId is not null)
+                        {
+                            <a asp-controller="Activities" asp-action="Details" asp-route-id="@item.TargetActivityId">@item.TargetLabel</a>
+                        }
+                        else if (item.TargetType == ReportTargetType.User && !string.IsNullOrEmpty(item.TargetUserId))
+                        {
+                            <a asp-controller="Profile" asp-action="Details" asp-route-id="@item.TargetUserId">@item.TargetLabel</a>
+                        }
+                        else
+                        {
+                            @item.TargetLabel
+                        }
+                    </td>
+                    <td>@item.Reason</td>
+                    <td>@item.ReporterDisplay</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id">Open</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

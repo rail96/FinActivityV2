@@ -110,6 +110,16 @@ namespace FindActivity.Web.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+                // Suspension preflight: if the account is currently banned, refuse sign-in
+                // with a useful message before checking the password.
+                var existingUser = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+                if (existingUser is not null && existingUser.IsSuspended)
+                {
+                    ModelState.AddModelError(string.Empty,
+                        $"This account is suspended until {existingUser.BannedUntilUtc:yyyy-MM-dd HH:mm} UTC.");
+                    return Page();
+                }
+
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);

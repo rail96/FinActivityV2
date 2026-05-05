@@ -26,6 +26,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
         options.Password.RequireUppercase = false;
         options.Password.RequireNonAlphanumeric = false;
     })
+    .AddRoles<IdentityRole>()
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<AppDbContext>();
 
@@ -42,6 +43,8 @@ builder.Services.AddTransient<INotificationService, NotificationService>();
 
 // Sends a reminder email ~24 hours before each scheduled activity starts.
 builder.Services.AddHostedService<ActivityReminderService>();
+// Ensures the Admin role exists, and promotes Admin:BootstrapEmail (if set) to Admin on startup.
+builder.Services.AddHostedService<RoleSeeder>();
 
 builder.Services.AddApplication();
 builder.Services.AddControllersWithViews();
