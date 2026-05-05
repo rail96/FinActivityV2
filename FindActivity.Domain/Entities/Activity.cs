@@ -24,6 +24,12 @@ public class Activity
     public ActivityStatus Status { get; set; } = ActivityStatus.Scheduled;
     public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// Timestamp the 24h reminder email was sent for this activity. Null until the reminder runs.
+    /// Used by ActivityReminderService for idempotency so the background job won't double-send.
+    /// </summary>
+    public DateTime? ReminderSentUtc { get; set; }
+
     public ICollection<ActivityParticipant> Participants { get; set; } = new List<ActivityParticipant>();
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
 }

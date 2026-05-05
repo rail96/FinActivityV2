@@ -38,6 +38,11 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
 builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection("SendGrid"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+// Higher-level activity notifications (RSVP, cancellation, reminders).
+builder.Services.AddTransient<INotificationService, NotificationService>();
+
+// Sends a reminder email ~24 hours before each scheduled activity starts.
+builder.Services.AddHostedService<ActivityReminderService>();
 // Ensures the Admin role exists, and promotes Admin:BootstrapEmail (if set) to Admin on startup.
 builder.Services.AddHostedService<RoleSeeder>();
 
