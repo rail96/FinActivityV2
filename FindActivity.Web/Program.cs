@@ -26,6 +26,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
         options.Password.RequireUppercase = false;
         options.Password.RequireNonAlphanumeric = false;
     })
+    .AddRoles<IdentityRole>()
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<AppDbContext>();
 
@@ -36,6 +37,9 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
 // SendGrid-backed email sender for Identity confirmation + password reset emails.
 builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection("SendGrid"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+// Ensures the Admin role exists, and promotes Admin:BootstrapEmail (if set) to Admin on startup.
+builder.Services.AddHostedService<RoleSeeder>();
 
 builder.Services.AddApplication();
 builder.Services.AddControllersWithViews();
