@@ -1,0 +1,187 @@
+@model FindActivity.Web.Models.Admin.AdminReportDetailsViewModel
+@using FindActivity.Domain.Enums
+@{
+    ViewData["Title"] = $"Report {Model.Report.Id.ToString().Substring(0, 8)}";
+    var isOpen = Model.Report.Status == ReportStatus.Open;
+    var canSuspend = Model.TargetUser is not null;
+    var canRemoveActivity = Model.Report.TargetType == ReportTargetType.Activity && Model.TargetActivity is not null;
+}
+
+<h1>Report</h1>
+
+<a asp-action="Index" class="btn btn-link p-0 mb-3">&larr; Back to reports</a>
+
+<dl class="row">
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9">
+        <span class="badge bg-@(Model.Report.Status switch {
+            ReportStatus.Open => "warning",
+            ReportStatus.ActionTaken => "danger",
+            ReportStatus.Dismissed => "secondary",
+            _ => "light"
+        })">@Model.Report.Status</span>
+    </dd>
+
+    <dt class="col-sm-3">Filed</dt>
+    <dd class="col-sm-9">@Model.Report.CreatedUtc.ToString("u")</dd>
+
+    <dt class="col-sm-3">Reason</dt>
+    <dd class="col-sm-9">@Model.Report.Reason</dd>
+
+    <dt class="col-sm-3">Reporter</dt>
+    <dd class="col-sm-9">
+        @if (Model.Reporter is not null)
+        {
+            <a asp-controller="Profile" asp-action="Details" asp-route-id="@Model.Reporter.Id">
+                @(Model.Reporter.DisplayName ?? Model.Reporter.UserName)
+            </a>
+            <span class="text-muted">(@Model.Reporter.Email)</span>
+        }
+        else
+        {
+            <span class="text-muted">(deleted)</span>
+        }
+    </dd>
+
+    <dt class="col-sm-3">Details</dt>
+    <dd class="col-sm-9">
+        @if (string.IsNullOrWhiteSpace(Model.Report.Details))
+        {
+            <span class="text-muted">— none —</span>
+        }
+        else
+        {
+            <pre class="mb-0" style="white-space: pre-wrap;">@Model.Report.Details</pre>
+        }
+    </dd>
+
+    @if (Model.Report.TargetType == ReportTargetType.Activity)
+    {
+        <dt class="col-sm-3">Target activity</dt>
+        <dd class="col-sm-9">
+            @if (Model.TargetActivity is not null)
+            {
+                <a asp-controller="Activities" asp-action="Details" asp-route-id="@Model.TargetActivity.Id">@Model.TargetActivity.Title</a>
+                <div class="text-muted small">
+                    @Model.TargetActivity.Status &middot; @Model.TargetActivity.StartUtc.ToString("u") &middot;
+                    @Model.TargetActivity.City, @Model.TargetActivity.State
+                </div>
+            }
+            else
+            {
+                <span class="text-muted">(deleted)</span>
+            }
+        </dd>
+    }
+
+    @if (Model.TargetUser is not null)
+    {
+        <dt class="col-sm-3">@(Model.Report.TargetType == ReportTargetType.Activity ? "Activity host" : "Target user")</dt>
+        <dd class="col-sm-9">
+            <a asp-controller="Profile" asp-action="Details" asp-route-id="@Model.TargetUser.Id">
+                @(Model.TargetUser.DisplayName ?? Model.TargetUser.UserName)
+            </a>
+            <span class="text-muted">(@Model.TargetUser.Email)</span>
+            @if (Model.TargetUser.IsSuspended)
+            {
+                <div><span class="badge bg-danger">Suspended until @Model.TargetUser.BannedUntilUtc?.ToString("u")</span></div>
+            }
+        </dd>
+    }
+
+    @if (!isOpen)
+    {
+        <dt class="col-sm-3">Resolved</dt>
+        <dd class="col-sm-9">@Model.Report.ResolvedUtc?.ToString("u")</dd>
+
+        <dt class="col-sm-3">Resolution notes</dt>
+        <dd class="col-sm-9">
+            @if (string.IsNullOrWhiteSpace(Model.Report.ResolutionNotes))
+            {
+                <span class="text-muted">— none —</span>
+            }
+            else
+            {
+                <pre class="mb-0" style="white-space: pre-wrap;">@Model.Report.ResolutionNotes</pre>
+            }
+        </dd>
+    }
+</dl>
+
+@if (isOpen)
+{
+    <hr />
+    <h3>Take action</h3>
+    <p class="text-muted">All actions resolve this report and are logged.</p>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <form asp-action="Dismiss" asp-route-id="@Model.Report.Id" method="post" class="card p-3 h-100">
+                @Html.AntiForgeryToken()
+                <h5>Dismiss</h5>
+                <p class="text-muted small">No violation found, or duplicate report.</p>
+                <textarea name="notes" class="form-control mb-2" rows="2" placeholder="Notes (optional)"></textarea>
+                <button class="btn btn-secondary" type="submit">Dismiss report</button>
+            </form>
+        </div>
+
+        @if (canSuspend)
+        {
+            <div class="col-md-6">
+                <form asp-action="Suspend" asp-route-id="@Model.Report.Id" method="post" class="card p-3 h-100">
+                    @Html.AntiForgeryToken()
+                    <h5>Suspend user</h5>
+                    <p class="text-muted small">Block sign-in for the chosen number of days.</p>
+                    <div class="mb-2">
+                        <label class="form-label">Days</label>
+                        <input type="number" name="days" class="form-control" value="7" min="1" max="365" required />
+                    </div>
+                    <textarea name="notes" class="form-control mb-2" rows="2" placeholder="Reason for suspension (optional)"></textarea>
+                    <button class="btn btn-warning" type="submit">Suspend</button>
+                </form>
+            </div>
+
+            <div class="col-md-6">
+                <form asp-action="Ban" asp-route-id="@Model.Report.Id" method="post" class="card p-3 h-100">
+                    @Html.AntiForgeryToken()
+                    <h5>Ban user</h5>
+                    <p class="text-muted small">365-day suspension. User can appeal afterwards.</p>
+                    <textarea name="notes" class="form-control mb-2" rows="2" placeholder="Notes (optional)"></textarea>
+                    <button class="btn btn-danger" type="submit"
+                            onclick="return confirm('Ban this user for 365 days?');">Ban</button>
+                </form>
+            </div>
+        }
+
+        @if (canRemoveActivity)
+        {
+            <div class="col-md-6">
+                <form asp-action="RemoveActivity" asp-route-id="@Model.Report.Id" method="post" class="card p-3 h-100">
+                    @Html.AntiForgeryToken()
+                    <h5>Remove activity</h5>
+                    <p class="text-muted small">Cancels the activity so it can't be joined or shown as scheduled.</p>
+                    <textarea name="notes" class="form-control mb-2" rows="2" placeholder="Notes (optional)"></textarea>
+                    <button class="btn btn-danger" type="submit"
+                            onclick="return confirm('Cancel this activity?');">Remove activity</button>
+                </form>
+            </div>
+        }
+    </div>
+}
+
+@if (Model.RelatedReports.Any())
+{
+    <hr />
+    <h3>Other reports against this target</h3>
+    <ul>
+        @foreach (var related in Model.RelatedReports)
+        {
+            <li>
+                <a asp-action="Details" asp-route-id="@related.Id">
+                    @related.Reason &mdash; @related.Status
+                </a>
+                <span class="text-muted">@related.CreatedUtc.ToString("u")</span>
+            </li>
+        }
+    </ul>
+}
