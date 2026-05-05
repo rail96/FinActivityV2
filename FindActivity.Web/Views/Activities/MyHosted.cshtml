@@ -1,78 +1,151 @@
-@model FindActivity.Web.Models.Activities.ActivityListWithParticipantsViewModel
+@model FindActivity.Web.Models.Activities.MyHostedViewModel
+@using FindActivity.Domain.Enums
 @{
-    ViewData["Title"] = Model.Heading;
+    ViewData["Title"] = "My hosted activities";
+
+    string TabClass(ActivityStatus? status) =>
+        Model.FilterStatus == status ? "nav-link active" : "nav-link";
+
+    string FormatStartUtc(DateTime startUtc)
+    {
+        var diff = startUtc - DateTime.UtcNow;
+        if (diff.TotalMinutes < -1)
+        {
+            var ago = -diff;
+            if (ago.TotalDays >= 1) return $"{(int)ago.TotalDays}d ago";
+            if (ago.TotalHours >= 1) return $"{(int)ago.TotalHours}h ago";
+            return "just now";
+        }
+        if (diff.TotalDays >= 1) return $"in {(int)diff.TotalDays}d";
+        if (diff.TotalHours >= 1) return $"in {(int)diff.TotalHours}h";
+        return "starting soon";
+    }
+
+    string CapacityBarColor(int joined, int capacity) =>
+        capacity == 0 ? "bg-secondary"
+            : joined >= capacity ? "bg-warning"
+            : joined >= capacity * 0.75 ? "bg-info"
+            : "bg-success";
 }
 
-<h1>@Model.Heading</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">My hosted activities</h1>
+    <a class="btn btn-primary" asp-action="Create">+ New activity</a>
+</div>
+
+<ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+        <a class="@TabClass(null)" asp-action="MyHosted">
+            All <span class="badge bg-light text-dark">@Model.TotalCount</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="@TabClass(ActivityStatus.Scheduled)" asp-action="MyHosted" asp-route-status="@((int)ActivityStatus.Scheduled)">
+            Scheduled <span class="badge bg-light text-dark">@Model.ScheduledCount</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="@TabClass(ActivityStatus.Completed)" asp-action="MyHosted" asp-route-status="@((int)ActivityStatus.Completed)">
+            Completed <span class="badge bg-light text-dark">@Model.CompletedCount</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="@TabClass(ActivityStatus.Cancelled)" asp-action="MyHosted" asp-route-status="@((int)ActivityStatus.Cancelled)">
+            Cancelled <span class="badge bg-light text-dark">@Model.CancelledCount</span>
+        </a>
+    </li>
+</ul>
 
 @if (!Model.Activities.Any())
 {
-    <p class="text-muted">No activities found.</p>
+    <div class="alert alert-light border" role="alert">
+        @if (Model.FilterStatus is null)
+        {
+            <span>You haven't hosted any activities yet. </span>
+            <a asp-action="Create">Host one now &rarr;</a>
+        }
+        else
+        {
+            <span>No @Model.FilterStatus.ToString().ToLower() activities.</span>
+        }
+    </div>
 }
 else
 {
+    <div class="row g-3">
     @foreach (var activity in Model.Activities)
     {
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h5 class="card-title mb-1">@activity.Title</h5>
-                        <div class="text-muted">@activity.CategoryName • @activity.City, @activity.State</div>
+        var joinedPct = activity.Capacity == 0 ? 0 : Math.Min(100, (int)Math.Round((double)activity.JoinedCount / activity.Capacity * 100));
+        var endUtc = activity.StartUtc.AddMinutes(activity.DurationMinutes);
+        var canEdit = activity.Status == ActivityStatus.Scheduled;
+        var canCancel = activity.Status == ActivityStatus.Scheduled;
+        var canComplete = activity.Status == ActivityStatus.Scheduled && endUtc <= DateTime.UtcNow;
+
+        <div class="col-12 col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">
+                            <a class="text-reset text-decoration-none" asp-action="Details" asp-route-id="@activity.Id">@activity.Title</a>
+                        </h5>
+                        <span class="badge bg-@(activity.Status switch {
+                            ActivityStatus.Scheduled => "primary",
+                            ActivityStatus.Completed => "success",
+                            ActivityStatus.Cancelled => "secondary",
+                            _ => "light"
+                        })">@activity.Status</span>
                     </div>
-                    <span class="badge bg-secondary">@activity.Status</span>
-                </div>
 
-                <dl class="row mt-3 mb-2">
-                    <dt class="col-sm-3">Start (UTC)</dt>
-                    <dd class="col-sm-9">@activity.StartUtc.ToString("u")</dd>
-                    <dt class="col-sm-3">Duration</dt>
-                    <dd class="col-sm-9">@activity.DurationMinutes minutes</dd>
-                    <dt class="col-sm-3">Capacity</dt>
-                    <dd class="col-sm-9">@activity.JoinedCount / @activity.Capacity</dd>
-                </dl>
+                    <div class="text-muted small mb-2">
+                        @activity.CategoryName &middot; @activity.City, @activity.State
+                    </div>
 
-                <div class="mb-3">
-                    <a asp-action="Details" asp-route-id="@activity.Id">View details</a>
-                </div>
+                    <div class="mb-2">
+                        <strong>@activity.StartUtc.ToString("ddd MMM d, HH:mm")</strong>
+                        <span class="text-muted">UTC &middot; @FormatStartUtc(activity.StartUtc) &middot; @activity.DurationMinutes min</span>
+                    </div>
 
-                <h6>Participants</h6>
-                @if (!activity.Participants.Any())
-                {
-                    <p class="text-muted mb-0">No participants yet.</p>
-                }
-                else
-                {
-                    <div class="table-responsive">
-                        <table class="table table-sm align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Rating</th>
-                                    <th>Bio</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            @foreach (var participant in activity.Participants)
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>@activity.JoinedCount / @activity.Capacity joined</span>
+                            @if (activity.WaitlistedCount > 0)
                             {
-                                var ratingLabel = participant.RatingCount == 0
-                                    ? "No ratings yet"
-                                    : $"{participant.RatingAvg:0.0} ({participant.RatingCount})";
-                                <tr>
-                                    <td>@participant.DisplayName</td>
-                                    <td>@ratingLabel</td>
-                                    <td>@(string.IsNullOrWhiteSpace(participant.Bio) ? "—" : participant.Bio)</td>
-                                    <td>
-                                        <a asp-controller="Profile" asp-action="Details" asp-route-id="@participant.UserId">View profile</a>
-                                    </td>
-                                </tr>
+                                <span class="text-info">@activity.WaitlistedCount on waitlist</span>
                             }
-                            </tbody>
-                        </table>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar @CapacityBarColor(activity.JoinedCount, activity.Capacity)"
+                                 role="progressbar"
+                                 style="width: @joinedPct%"
+                                 aria-valuenow="@joinedPct" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
                     </div>
-                }
+
+                    <div class="mt-auto d-flex flex-wrap gap-2">
+                        <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@activity.Id">View</a>
+                        @if (canEdit)
+                        {
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@activity.Id">Edit</a>
+                        }
+                        @if (canCancel)
+                        {
+                            <form asp-action="Cancel" asp-route-id="@activity.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-sm btn-outline-danger" type="submit"
+                                        onclick="return confirm('Cancel this activity? Participants will be notified.');">Cancel</button>
+                            </form>
+                        }
+                        @if (canComplete)
+                        {
+                            <form asp-action="Complete" asp-route-id="@activity.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-sm btn-outline-success" type="submit">Mark complete</button>
+                            </form>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     }
+    </div>
 }
