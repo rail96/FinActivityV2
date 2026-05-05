@@ -11,6 +11,8 @@ public interface INotificationService
     Task SendActivityCancelledAsync(string toEmail, string toName, ActivityEmailContext context, CancellationToken cancellationToken = default);
 
     Task SendActivityReminderAsync(string toEmail, string toName, ActivityEmailContext context, CancellationToken cancellationToken = default);
+
+    Task SendWaitlistPromotedAsync(string toEmail, string toName, ActivityEmailContext context, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

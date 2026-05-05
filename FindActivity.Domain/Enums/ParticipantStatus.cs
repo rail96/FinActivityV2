@@ -6,5 +6,6 @@ public enum ParticipantStatus
     Joined = 1,
     Left = 2,
     Removed = 3,
-    Completed = 4
+    Completed = 4,
+    Waitlisted = 5
 }

@@ -48,6 +48,18 @@ public class NotificationService : INotificationService
         return SendSafelyAsync(toEmail, subject, body, "24h reminder");
     }
 
+    public Task SendWaitlistPromotedAsync(string toEmail, string toName, ActivityEmailContext ctx, CancellationToken cancellationToken = default)
+    {
+        var subject = $"You're off the waitlist: {ctx.Title}";
+        var body = WrapEmail(
+            $"<h2>You're in!</h2>" +
+            $"<p>Hi {Encode(toName)}, a slot opened up and you've been promoted from the waitlist for " +
+            $"<strong>{Encode(ctx.Title)}</strong>. You're now a confirmed participant.</p>" +
+            BuildActivityCard(ctx) +
+            $"<p>If your plans have changed, please leave the activity from the page above so the next person on the waitlist can take the spot.</p>");
+        return SendSafelyAsync(toEmail, subject, body, "waitlist promotion");
+    }
+
     /// <summary>
     /// Wraps content with an outer email shell. Plain inline styles only — many mail clients
     /// strip stylesheets, so we keep this minimal and rely on default rendering.

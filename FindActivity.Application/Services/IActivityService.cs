@@ -10,8 +10,8 @@ public interface IActivityService
     Task<IReadOnlyList<ActivityWithParticipantsDto>> GetParticipatingActivitiesAsync(string userId, CancellationToken cancellationToken = default);
     Task<Guid> CreateAsync(ActivityCreateDto dto, string userId, CancellationToken cancellationToken = default);
     Task<bool> UpdateAsync(ActivityEditDto dto, string userId, CancellationToken cancellationToken = default);
-    Task<bool> JoinAsync(Guid activityId, string userId, CancellationToken cancellationToken = default);
-    Task<bool> LeaveAsync(Guid activityId, string userId, CancellationToken cancellationToken = default);
+    Task<JoinOutcome> JoinAsync(Guid activityId, string userId, CancellationToken cancellationToken = default);
+    Task<LeaveResult> LeaveAsync(Guid activityId, string userId, CancellationToken cancellationToken = default);
     Task<bool> CancelAsync(Guid activityId, string userId, CancellationToken cancellationToken = default);
     Task<bool> CompleteAsync(Guid activityId, CancellationToken cancellationToken = default);
 }
