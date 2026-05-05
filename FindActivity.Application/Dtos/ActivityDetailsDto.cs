@@ -19,6 +19,10 @@ public class ActivityDetailsDto
     public string CreatedByUserId { get; set; } = string.Empty;
     public ActivityStatus Status { get; set; }
     public int JoinedCount { get; set; }
+    public int WaitlistedCount { get; set; }
     public bool IsUserJoined { get; set; }
+    public bool IsUserWaitlisted { get; set; }
+    /// <summary>1-based position in the waitlist queue when the current user is waitlisted; null otherwise.</summary>
+    public int? UserWaitlistPosition { get; set; }
     public IReadOnlyList<ParticipantSummaryDto> Participants { get; set; } = Array.Empty<ParticipantSummaryDto>();
 }

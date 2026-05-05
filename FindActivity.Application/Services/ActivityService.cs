@@ -79,9 +79,27 @@ public class ActivityService : IActivityService
         }
 
         var joinedCount = activity.Participants.Count(p => p.Status == ParticipantStatus.Joined);
+        var waitlistedCount = activity.Participants.Count(p => p.Status == ParticipantStatus.Waitlisted);
         var isUserJoined = currentUserId != null && activity.Participants.Any(p => p.UserId == currentUserId && p.Status == ParticipantStatus.Joined);
 
-        var joinedParticipants = GetJoinedParticipants(activity);
+        // Compute the current user's position on the waitlist (1-based) by ordering by JoinedUtc.
+        int? userWaitlistPosition = null;
+        bool isUserWaitlisted = false;
+        if (currentUserId is not null)
+        {
+            var orderedWaitlist = activity.Participants
+                .Where(p => p.Status == ParticipantStatus.Waitlisted)
+                .OrderBy(p => p.JoinedUtc)
+                .Select((p, idx) => new { p.UserId, Position = idx + 1 })
+                .FirstOrDefault(x => x.UserId == currentUserId);
+            if (orderedWaitlist is not null)
+            {
+                isUserWaitlisted = true;
+                userWaitlistPosition = orderedWaitlist.Position;
+            }
+        }
+
+        var participants = GetJoinedAndWaitlistedParticipants(activity);
 
         return new ActivityDetailsDto
         {
@@ -100,8 +118,11 @@ public class ActivityService : IActivityService
             CreatedByUserId = activity.CreatedByUserId,
             Status = activity.Status,
             JoinedCount = joinedCount,
+            WaitlistedCount = waitlistedCount,
             IsUserJoined = isUserJoined,
-            Participants = joinedParticipants
+            IsUserWaitlisted = isUserWaitlisted,
+            UserWaitlistPosition = userWaitlistPosition,
+            Participants = participants
         };
     }
 
@@ -182,7 +203,7 @@ public class ActivityService : IActivityService
         return activities.Select(MapActivityWithParticipants).ToList();
     }
 
-    public async Task<bool> JoinAsync(Guid activityId, string userId, CancellationToken cancellationToken = default)
+    public async Task<JoinOutcome> JoinAsync(Guid activityId, string userId, CancellationToken cancellationToken = default)
     {
         var activity = await _db.Activities
             .Include(a => a.Participants)
@@ -190,59 +211,76 @@ public class ActivityService : IActivityService
 
         if (activity is null || activity.Status != ActivityStatus.Scheduled)
         {
-            return false;
+            return JoinOutcome.NotAllowed;
         }
 
         if (activity.CreatedByUserId == userId)
         {
-            return false;
+            return JoinOutcome.NotAllowed;
         }
+
+        var joinedCount = activity.Participants.Count(p => p.Status == ParticipantStatus.Joined);
+        var hasCapacity = joinedCount < activity.Capacity;
 
         var existing = activity.Participants.FirstOrDefault(p => p.UserId == userId);
         if (existing is not null)
         {
-            if (existing.Status == ParticipantStatus.Joined)
+            if (existing.Status == ParticipantStatus.Joined || existing.Status == ParticipantStatus.Waitlisted)
             {
-                return true;
+                return JoinOutcome.AlreadyParticipating;
             }
 
-            existing.Status = ParticipantStatus.Joined;
+            // Re-joining after Left/Removed: take the next available slot, otherwise waitlist.
+            existing.Status = hasCapacity ? ParticipantStatus.Joined : ParticipantStatus.Waitlisted;
             existing.JoinedUtc = DateTime.UtcNow;
             await _db.SaveChangesAsync(cancellationToken);
-            return true;
+            return hasCapacity ? JoinOutcome.Joined : JoinOutcome.Waitlisted;
         }
 
-        var joinedCount = activity.Participants.Count(p => p.Status == ParticipantStatus.Joined);
-        if (joinedCount >= activity.Capacity)
-        {
-            return false;
-        }
-
+        var newStatus = hasCapacity ? ParticipantStatus.Joined : ParticipantStatus.Waitlisted;
         _db.ActivityParticipants.Add(new ActivityParticipant
         {
             ActivityId = activity.Id,
             UserId = userId,
-            Status = ParticipantStatus.Joined,
+            Status = newStatus,
             JoinedUtc = DateTime.UtcNow
         });
 
         await _db.SaveChangesAsync(cancellationToken);
-        return true;
+        return hasCapacity ? JoinOutcome.Joined : JoinOutcome.Waitlisted;
     }
 
-    public async Task<bool> LeaveAsync(Guid activityId, string userId, CancellationToken cancellationToken = default)
+    public async Task<LeaveResult> LeaveAsync(Guid activityId, string userId, CancellationToken cancellationToken = default)
     {
         var participant = await _db.ActivityParticipants
             .FirstOrDefaultAsync(p => p.ActivityId == activityId && p.UserId == userId, cancellationToken);
 
         if (participant is null)
         {
-            return false;
+            return new LeaveResult(false, null);
         }
 
+        var wasJoined = participant.Status == ParticipantStatus.Joined;
         participant.Status = ParticipantStatus.Left;
+
+        // If a confirmed participant just freed a slot, promote the oldest waitlisted.
+        string? promotedUserId = null;
+        if (wasJoined)
+        {
+            var nextUp = await _db.ActivityParticipants
+                .Where(p => p.ActivityId == activityId && p.Status == ParticipantStatus.Waitlisted)
+                .OrderBy(p => p.JoinedUtc)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (nextUp is not null)
+            {
+                nextUp.Status = ParticipantStatus.Joined;
+                // Keep the original JoinedUtc so the queue order is preserved and the promotion is a true upgrade.
+                promotedUserId = nextUp.UserId;
+            }
+        }
+
         await _db.SaveChangesAsync(cancellationToken);
-        return true;
+        return new LeaveResult(true, promotedUserId);
     }
 
     public async Task<bool> CancelAsync(Guid activityId, string userId, CancellationToken cancellationToken = default)
@@ -304,6 +342,25 @@ public class ActivityService : IActivityService
             .ToList();
     }
 
+    /// <summary>
+    /// Joined participants alphabetical, then waitlisted in queue order. Status is preserved on the DTO
+    /// so the view can render the two groups distinctly.
+    /// </summary>
+    private static IReadOnlyList<ParticipantSummaryDto> GetJoinedAndWaitlistedParticipants(Activity activity)
+    {
+        var joined = activity.Participants
+            .Where(p => p.Status == ParticipantStatus.Joined)
+            .OrderBy(p => p.User?.DisplayName ?? p.User?.UserName ?? string.Empty)
+            .Select(MapParticipant)
+            .ToList();
+        var waitlisted = activity.Participants
+            .Where(p => p.Status == ParticipantStatus.Waitlisted)
+            .OrderBy(p => p.JoinedUtc)
+            .Select(MapParticipant)
+            .ToList();
+        return joined.Concat(waitlisted).ToList();
+    }
+
     private static ParticipantSummaryDto MapParticipant(ActivityParticipant participant)
     {
         var user = participant.User;
@@ -319,7 +376,8 @@ public class ActivityService : IActivityService
             DisplayName = displayName,
             Bio = user?.Bio,
             RatingAvg = user?.RatingAvg ?? 0,
-            RatingCount = user?.RatingCount ?? 0
+            RatingCount = user?.RatingCount ?? 0,
+            Status = participant.Status
         };
     }
 }

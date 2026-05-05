@@ -17,6 +17,14 @@
 {
     <div class="alert alert-danger" role="alert">@reportError</div>
 }
+@if (TempData["JoinMessage"] is string joinMessage)
+{
+    <div class="alert alert-info" role="alert">@joinMessage</div>
+}
+@if (TempData["JoinError"] is string joinError)
+{
+    <div class="alert alert-danger" role="alert">@joinError</div>
+}
 
 <h1>@Model.Activity.Title</h1>
 
@@ -33,7 +41,17 @@
     <dt class="col-sm-3">Location</dt>
     <dd class="col-sm-9">@Model.Activity.Address, @Model.Activity.City, @Model.Activity.State</dd>
     <dt class="col-sm-3">Capacity</dt>
-    <dd class="col-sm-9">@Model.Activity.JoinedCount / @Model.Activity.Capacity</dd>
+    <dd class="col-sm-9">
+        @Model.Activity.JoinedCount / @Model.Activity.Capacity joined
+        @if (Model.Activity.WaitlistedCount > 0)
+        {
+            <span class="text-muted">&middot; @Model.Activity.WaitlistedCount on waitlist</span>
+        }
+        @if (Model.Activity.IsUserWaitlisted)
+        {
+            <div><span class="badge bg-info">You're #@Model.Activity.UserWaitlistPosition on the waitlist</span></div>
+        }
+    </dd>
     <dt class="col-sm-3">Minimum age</dt>
     <dd class="col-sm-9">@(Model.Activity.MinAge?.ToString() ?? "None")</dd>
     <dt class="col-sm-3">Host</dt>
@@ -46,9 +64,12 @@
 
 @if (User.Identity?.IsAuthenticated == true && (Model.IsCreator || Model.Activity.IsUserJoined))
 {
+    var joinedList = Model.Activity.Participants.Where(p => p.Status == ParticipantStatus.Joined).ToList();
+    var waitlistedList = Model.Activity.Participants.Where(p => p.Status == ParticipantStatus.Waitlisted).ToList();
+
     <div class="mt-4">
-        <h5>Participants</h5>
-        @if (!Model.Activity.Participants.Any())
+        <h5>Participants (@joinedList.Count)</h5>
+        @if (!joinedList.Any())
         {
             <p class="text-muted mb-0">No participants yet.</p>
         }
@@ -65,7 +86,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach (var participant in Model.Activity.Participants)
+                    @foreach (var participant in joinedList)
                     {
                         var ratingLabel = participant.RatingCount == 0
                             ? "No ratings yet"
@@ -84,6 +105,44 @@
             </div>
         }
     </div>
+
+    @if (Model.IsCreator && waitlistedList.Any())
+    {
+        <div class="mt-4">
+            <h5>Waitlist (@waitlistedList.Count)</h5>
+            <p class="text-muted small mb-2">Listed in queue order. The next person is auto-promoted when a spot opens.</p>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Rating</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @{ var pos = 1; }
+                    @foreach (var participant in waitlistedList)
+                    {
+                        var ratingLabel = participant.RatingCount == 0
+                            ? "No ratings yet"
+                            : $"{participant.RatingAvg:0.0} ({participant.RatingCount})";
+                        <tr>
+                            <td>@pos</td>
+                            <td>@participant.DisplayName</td>
+                            <td>@ratingLabel</td>
+                            <td>
+                                <a asp-controller="Profile" asp-action="Details" asp-route-id="@participant.UserId">View profile</a>
+                            </td>
+                        </tr>
+                        pos++;
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
 }
 
 <div class="d-flex gap-2">
@@ -110,10 +169,19 @@
                     <button class="btn btn-warning" type="submit">Leave</button>
                 </form>
             }
+            else if (Model.Activity.IsUserWaitlisted)
+            {
+                <form asp-action="Leave" asp-route-id="@Model.Activity.Id" method="post">
+                    <button class="btn btn-outline-warning" type="submit">Leave waitlist</button>
+                </form>
+            }
             else
             {
+                var isFull = Model.Activity.JoinedCount >= Model.Activity.Capacity;
                 <form asp-action="Join" asp-route-id="@Model.Activity.Id" method="post">
-                    <button class="btn btn-success" type="submit">Join</button>
+                    <button class="btn @(isFull ? "btn-outline-success" : "btn-success")" type="submit">
+                        @(isFull ? "Join waitlist" : "Join")
+                    </button>
                 </form>
             }
         }

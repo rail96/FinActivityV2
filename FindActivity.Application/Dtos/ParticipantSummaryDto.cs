@@ -1,3 +1,5 @@
+using FindActivity.Domain.Enums;
+
 namespace FindActivity.Application.Dtos;
 
 public class ParticipantSummaryDto
@@ -7,4 +9,5 @@ public class ParticipantSummaryDto
     public string? Bio { get; set; }
     public double RatingAvg { get; set; }
     public int RatingCount { get; set; }
+    public ParticipantStatus Status { get; set; } = ParticipantStatus.Joined;
 }

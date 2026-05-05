@@ -268,10 +268,22 @@ public class ActivitiesController : Controller
             return Forbid();
         }
 
-        var joined = await _activityService.JoinAsync(id, userId, cancellationToken);
-        if (joined)
+        var outcome = await _activityService.JoinAsync(id, userId, cancellationToken);
+        switch (outcome)
         {
-            await SendJoinConfirmationAsync(id, userId, cancellationToken);
+            case JoinOutcome.Joined:
+                TempData["JoinMessage"] = "You're in! A confirmation email is on its way.";
+                await SendJoinConfirmationAsync(id, userId, cancellationToken);
+                break;
+            case JoinOutcome.Waitlisted:
+                TempData["JoinMessage"] = "Activity is full — you've been added to the waitlist. We'll email you if a spot opens up.";
+                break;
+            case JoinOutcome.AlreadyParticipating:
+                TempData["JoinMessage"] = "You're already on this activity.";
+                break;
+            case JoinOutcome.NotAllowed:
+                TempData["JoinError"] = "You can't join this activity right now.";
+                break;
         }
         return RedirectToAction(nameof(Details), new { id });
     }
@@ -307,8 +319,34 @@ public class ActivitiesController : Controller
             return Forbid();
         }
 
-        await _activityService.LeaveAsync(id, userId, cancellationToken);
+        var leaveResult = await _activityService.LeaveAsync(id, userId, cancellationToken);
+        if (leaveResult.Success && leaveResult.PromotedUserId is not null)
+        {
+            await SendWaitlistPromotionAsync(id, leaveResult.PromotedUserId, cancellationToken);
+        }
         return RedirectToAction(nameof(Details), new { id });
+    }
+
+    /// <summary>Loads the promoted user + activity context and sends the waitlist promotion email.</summary>
+    private async Task SendWaitlistPromotionAsync(Guid activityId, string promotedUserId, CancellationToken cancellationToken)
+    {
+        var activity = await _db.Activities
+            .AsNoTracking()
+            .Include(a => a.CreatedByUser)
+            .FirstOrDefaultAsync(a => a.Id == activityId, cancellationToken);
+        if (activity is null) return;
+
+        var promoted = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == promotedUserId, cancellationToken);
+        if (promoted?.Email is null) return;
+
+        var ctx = BuildContext(activity);
+        await _notifications.SendWaitlistPromotedAsync(
+            promoted.Email,
+            promoted.DisplayName ?? promoted.UserName ?? "there",
+            ctx,
+            cancellationToken);
+
+        _logger.LogInformation("Promoted user {UserId} from waitlist for activity {ActivityId}.", promotedUserId, activityId);
     }
 
     [Authorize]
@@ -323,9 +361,12 @@ public class ActivitiesController : Controller
         }
 
         // Capture participant emails BEFORE cancellation in case the service later prunes them.
+        // Includes waitlisted users — they should know the activity isn't happening.
         var recipients = await _db.ActivityParticipants
             .AsNoTracking()
-            .Where(p => p.ActivityId == id && p.Status == ParticipantStatus.Joined && p.UserId != userId)
+            .Where(p => p.ActivityId == id
+                        && (p.Status == ParticipantStatus.Joined || p.Status == ParticipantStatus.Waitlisted)
+                        && p.UserId != userId)
             .Select(p => new { p.UserId, p.User!.Email, p.User.UserName, p.User.DisplayName })
             .ToListAsync(cancellationToken);
 
