@@ -175,18 +175,30 @@ public class ActivityService : IActivityService
         }).ToList();
     }
 
-    public async Task<IReadOnlyList<ActivityWithParticipantsDto>> GetHostedActivitiesAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ActivityWithParticipantsDto>> GetHostedActivitiesAsync(string userId, ActivityStatus? statusFilter = null, CancellationToken cancellationToken = default)
     {
-        var activities = await _db.Activities
+        var query = _db.Activities
             .AsNoTracking()
             .Include(a => a.Category)
             .Include(a => a.Participants)
             .ThenInclude(p => p.User)
-            .Where(a => a.CreatedByUserId == userId)
-            .OrderByDescending(a => a.StartUtc)
-            .ToListAsync(cancellationToken);
+            .Where(a => a.CreatedByUserId == userId);
 
-        return activities.Select(MapActivityWithParticipants).ToList();
+        if (statusFilter.HasValue)
+        {
+            query = query.Where(a => a.Status == statusFilter.Value);
+        }
+
+        var activities = await query.ToListAsync(cancellationToken);
+
+        // Order: Scheduled by StartUtc ascending (earliest first), others by StartUtc descending (most recent first).
+        var ordered = activities
+            .OrderBy(a => a.Status == ActivityStatus.Scheduled ? 0 : 1)
+            .ThenBy(a => a.Status == ActivityStatus.Scheduled ? a.StartUtc : DateTime.MaxValue)
+            .ThenByDescending(a => a.StartUtc)
+            .ToList();
+
+        return ordered.Select(MapActivityWithParticipants).ToList();
     }
 
     public async Task<IReadOnlyList<ActivityWithParticipantsDto>> GetParticipatingActivitiesAsync(string userId, CancellationToken cancellationToken = default)
@@ -327,6 +339,7 @@ public class ActivityService : IActivityService
             DurationMinutes = activity.DurationMinutes,
             Capacity = activity.Capacity,
             JoinedCount = activity.Participants.Count(p => p.Status == ParticipantStatus.Joined),
+            WaitlistedCount = activity.Participants.Count(p => p.Status == ParticipantStatus.Waitlisted),
             Status = activity.Status,
             CreatedByUserId = activity.CreatedByUserId,
             Participants = GetJoinedParticipants(activity)

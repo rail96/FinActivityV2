@@ -48,7 +48,7 @@ public class ActivitiesController : Controller
     }
 
     [Authorize]
-    public async Task<IActionResult> MyHosted(CancellationToken cancellationToken)
+    public async Task<IActionResult> MyHosted(ActivityStatus? status, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null)
@@ -56,12 +56,20 @@ public class ActivitiesController : Controller
             return Forbid();
         }
 
-        var activities = await _activityService.GetHostedActivitiesAsync(userId, cancellationToken);
-        return View(new ActivityListWithParticipantsViewModel
+        // Pull the full set first so we can compute per-status counts for the tabs.
+        var allHosted = await _activityService.GetHostedActivitiesAsync(userId, statusFilter: null, cancellationToken);
+        var filtered = status.HasValue
+            ? allHosted.Where(a => a.Status == status.Value).ToList()
+            : (IReadOnlyList<ActivityWithParticipantsDto>)allHosted;
+
+        return View(new MyHostedViewModel
         {
-            Heading = "My hosted activities",
-            ShowHostLink = false,
-            Activities = activities
+            FilterStatus = status,
+            Activities = filtered,
+            TotalCount = allHosted.Count,
+            ScheduledCount = allHosted.Count(a => a.Status == ActivityStatus.Scheduled),
+            CancelledCount = allHosted.Count(a => a.Status == ActivityStatus.Cancelled),
+            CompletedCount = allHosted.Count(a => a.Status == ActivityStatus.Completed)
         });
     }
 
