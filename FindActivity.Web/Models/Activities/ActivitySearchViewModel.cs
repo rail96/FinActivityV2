@@ -10,6 +10,9 @@ public class ActivitySearchViewModel
     public DateTime? StartUtcFrom { get; set; }
     public DateTime? StartUtcTo { get; set; }
 
+    /// <summary>Maximum distance (km) from the search center. Null = no distance filter.</summary>
+    public int? MaxDistanceKm { get; set; }
+
     /// <summary>"list" (default) or "map" — controls whether results render as cards or a Mapbox map.</summary>
     public string? View { get; set; }
 
