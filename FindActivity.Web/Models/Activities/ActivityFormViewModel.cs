@@ -41,6 +41,12 @@ public class ActivityFormViewModel
     [StringLength(150)]
     public string AddressPlaceId { get; set; } = string.Empty;
 
+    /// <summary>Captured from Mapbox autocomplete via a hidden field. Used for the map view.</summary>
+    public double? Latitude { get; set; }
+
+    /// <summary>Captured from Mapbox autocomplete via a hidden field. Used for the map view.</summary>
+    public double? Longitude { get; set; }
+
     [Range(1, 5000)]
     public int Capacity { get; set; } = 10;
 

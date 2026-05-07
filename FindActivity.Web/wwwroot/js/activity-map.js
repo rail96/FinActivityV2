@@ -64,8 +64,14 @@
         hasMarkers = true;
     };
 
+    // Prefer the lat/lng we now persist on activities; fall back to client-side geocoding only
+    // for older rows created before the map view was added.
     Promise.all(
         events.map(async (eventInfo) => {
+            if (typeof eventInfo.longitude === "number" && typeof eventInfo.latitude === "number") {
+                addMarker([eventInfo.longitude, eventInfo.latitude], eventInfo);
+                return;
+            }
             if (!eventInfo.address || !eventInfo.city) {
                 return;
             }

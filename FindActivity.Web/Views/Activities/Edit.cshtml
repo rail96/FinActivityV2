@@ -54,6 +54,8 @@
             <label class="form-label">Address</label>
             <input class="form-control" asp-for="Address" data-address-input autocomplete="off" />
             <input type="hidden" asp-for="AddressPlaceId" data-place-id-input />
+            <input type="hidden" asp-for="Latitude" data-latitude-input />
+            <input type="hidden" asp-for="Longitude" data-longitude-input />
             <div class="list-group position-absolute w-100 shadow-sm d-none" data-address-suggestions></div>
             <small class="text-muted d-block mt-1" data-address-help>
                 @if (string.IsNullOrWhiteSpace(mapboxToken))
