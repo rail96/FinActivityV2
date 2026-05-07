@@ -5,7 +5,9 @@
         return;
     }
 
-    const WA_BBOX = "-124.848974,45.543541,-116.91607,49.002494";
+    // Greater Seattle bounding box, kept in sync with FindActivity.Web/Validation/SeattleGeofence.cs.
+    // Restricts autocomplete suggestions so users don't pick an address we'll reject server-side.
+    const WA_BBOX = "-122.80,47.15,-121.60,48.05";
     const SEATTLE_PROXIMITY = "-122.3321,47.6062";
 
     const debounce = (fn, delay) => {
