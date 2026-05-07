@@ -94,7 +94,19 @@ else
             @foreach (var item in Model.Results)
             {
                 <tr>
-                    <td>@item.Title</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            @if (!string.IsNullOrWhiteSpace(item.CoverImagePath))
+                            {
+                                <img src="@item.CoverImagePath" alt="" style="width: 48px; height: 48px; object-fit: cover; border-radius: 4px;" />
+                            }
+                            else
+                            {
+                                <div style="width: 48px; height: 48px; background:#f0f0f0; border-radius: 4px;"></div>
+                            }
+                            <span>@item.Title</span>
+                        </div>
+                    </td>
                     <td>@item.City</td>
                     <td>@item.State</td>
                     <td>@item.CategoryName</td>
@@ -130,6 +142,7 @@ else
                     state = item.State,
                     latitude = item.Latitude,
                     longitude = item.Longitude,
+                    coverImage = item.CoverImagePath,
                     detailsUrl = Url.Action("Details", new { id = item.Id })
                 })
             ))

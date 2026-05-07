@@ -14,6 +14,7 @@ public class ActivityWithParticipantsDto
     public int Capacity { get; set; }
     public int JoinedCount { get; set; }
     public int WaitlistedCount { get; set; }
+    public string? CoverImagePath { get; set; }
     public ActivityStatus Status { get; set; }
     public string CreatedByUserId { get; set; } = string.Empty;
     public IReadOnlyList<ParticipantSummaryDto> Participants { get; set; } = Array.Empty<ParticipantSummaryDto>();

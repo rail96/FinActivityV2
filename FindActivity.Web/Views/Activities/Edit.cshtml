@@ -7,13 +7,26 @@
 
 <h1>Edit Activity</h1>
 
-<form asp-action="Edit" method="post">
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
     <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="CoverImagePath" />
     <div class="row g-3">
         <div class="col-md-6">
             <label class="form-label">Title</label>
             <input class="form-control" asp-for="Title" />
             <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" asp-for="CoverImageFile"></label>
+            @if (!string.IsNullOrWhiteSpace(Model.CoverImagePath))
+            {
+                <div class="mb-2">
+                    <img src="@Model.CoverImagePath" alt="Current cover" style="max-height: 80px; border-radius: 4px;" />
+                </div>
+            }
+            <input class="form-control" type="file" asp-for="CoverImageFile" accept="image/jpeg,image/png,image/webp" />
+            <small class="text-muted">JPG, PNG, or WebP. Max 5MB. Leave empty to keep the current image.</small>
+            <span asp-validation-for="CoverImageFile" class="text-danger"></span>
         </div>
         <div class="col-md-6">
             <label class="form-label">Category</label>

@@ -33,6 +33,7 @@ public class ActivityService : IActivityService
             Longitude = dto.Longitude,
             Capacity = dto.Capacity,
             MinAge = dto.MinAge,
+            CoverImagePath = dto.CoverImagePath,
             CreatedByUserId = userId,
             Status = ActivityStatus.Scheduled,
             CreatedUtc = DateTime.UtcNow
@@ -64,6 +65,11 @@ public class ActivityService : IActivityService
         activity.Longitude = dto.Longitude;
         activity.Capacity = dto.Capacity;
         activity.MinAge = dto.MinAge;
+        // Only overwrite the cover image when the caller actually provided one. Allows "keep current image" semantics on edit.
+        if (dto.CoverImagePath is not null)
+        {
+            activity.CoverImagePath = dto.CoverImagePath;
+        }
 
         await _db.SaveChangesAsync(cancellationToken);
         return true;
@@ -121,6 +127,7 @@ public class ActivityService : IActivityService
             Longitude = activity.Longitude,
             Capacity = activity.Capacity,
             MinAge = activity.MinAge,
+            CoverImagePath = activity.CoverImagePath,
             CreatedByUserId = activity.CreatedByUserId,
             Status = activity.Status,
             JoinedCount = joinedCount,
@@ -179,7 +186,8 @@ public class ActivityService : IActivityService
             JoinedCount = a.Participants.Count(p => p.Status == ParticipantStatus.Joined),
             Status = a.Status,
             Latitude = a.Latitude,
-            Longitude = a.Longitude
+            Longitude = a.Longitude,
+            CoverImagePath = a.CoverImagePath
         }).ToList();
     }
 
@@ -348,6 +356,7 @@ public class ActivityService : IActivityService
             Capacity = activity.Capacity,
             JoinedCount = activity.Participants.Count(p => p.Status == ParticipantStatus.Joined),
             WaitlistedCount = activity.Participants.Count(p => p.Status == ParticipantStatus.Waitlisted),
+            CoverImagePath = activity.CoverImagePath,
             Status = activity.Status,
             CreatedByUserId = activity.CreatedByUserId,
             Participants = GetJoinedParticipants(activity)
