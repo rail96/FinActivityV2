@@ -14,6 +14,8 @@ public class ActivityDetailsDto
     public string City { get; set; } = string.Empty;
     public string State { get; set; } = string.Empty;
     public string? AddressPlaceId { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public int Capacity { get; set; }
     public int? MinAge { get; set; }
     public string CreatedByUserId { get; set; } = string.Empty;

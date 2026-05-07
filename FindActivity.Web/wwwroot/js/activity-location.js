@@ -37,6 +37,8 @@
         const cityInput = (form ?? document).querySelector("[data-city-input]");
         const stateInput = (form ?? document).querySelector("[data-state-input]");
         const placeIdInput = container.querySelector("[data-place-id-input]");
+        const latInput = (form ?? document).querySelector("[data-latitude-input]");
+        const lngInput = (form ?? document).querySelector("[data-longitude-input]");
         const list = container.querySelector("[data-address-suggestions]");
         const help = container.querySelector("[data-address-help]");
 
@@ -88,6 +90,11 @@
                 button.dataset.city = getCityFromFeature(feature);
                 const region = (feature.context || []).find((item) => item.id.startsWith("region."));
                 button.dataset.state = region?.short_code?.toUpperCase() || region?.text || "";
+                // Mapbox returns coords as [lng, lat] in the center array.
+                if (Array.isArray(feature.center) && feature.center.length === 2) {
+                    button.dataset.longitude = String(feature.center[0]);
+                    button.dataset.latitude = String(feature.center[1]);
+                }
                 list.appendChild(button);
             });
 
@@ -141,6 +148,13 @@
             if (stateInput) {
                 stateInput.value = "";
             }
+            // Stale lat/lng would mis-pin the activity, so clear them whenever the address changes.
+            if (latInput) {
+                latInput.value = "";
+            }
+            if (lngInput) {
+                lngInput.value = "";
+            }
             if (!hasToken) {
                 showStatus("Missing Mapbox token.");
                 return;
@@ -172,6 +186,12 @@
                 stateInput.value = target.dataset.state || "";
             }
             placeIdInput.value = target.dataset.placeId;
+            if (latInput) {
+                latInput.value = target.dataset.latitude || "";
+            }
+            if (lngInput) {
+                lngInput.value = target.dataset.longitude || "";
+            }
             addressInput.classList.remove("is-invalid");
             clearSuggestions();
         });

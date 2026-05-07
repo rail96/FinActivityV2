@@ -29,6 +29,8 @@ public class ActivityService : IActivityService
             City = dto.City.Trim(),
             State = dto.State.Trim(),
             AddressPlaceId = dto.AddressPlaceId?.Trim(),
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
             Capacity = dto.Capacity,
             MinAge = dto.MinAge,
             CreatedByUserId = userId,
@@ -58,6 +60,8 @@ public class ActivityService : IActivityService
         activity.City = dto.City.Trim();
         activity.State = dto.State.Trim();
         activity.AddressPlaceId = dto.AddressPlaceId?.Trim();
+        activity.Latitude = dto.Latitude;
+        activity.Longitude = dto.Longitude;
         activity.Capacity = dto.Capacity;
         activity.MinAge = dto.MinAge;
 
@@ -113,6 +117,8 @@ public class ActivityService : IActivityService
             City = activity.City,
             State = activity.State,
             AddressPlaceId = activity.AddressPlaceId,
+            Latitude = activity.Latitude,
+            Longitude = activity.Longitude,
             Capacity = activity.Capacity,
             MinAge = activity.MinAge,
             CreatedByUserId = activity.CreatedByUserId,
@@ -171,7 +177,9 @@ public class ActivityService : IActivityService
             DurationMinutes = a.DurationMinutes,
             Capacity = a.Capacity,
             JoinedCount = a.Participants.Count(p => p.Status == ParticipantStatus.Joined),
-            Status = a.Status
+            Status = a.Status,
+            Latitude = a.Latitude,
+            Longitude = a.Longitude
         }).ToList();
     }
 

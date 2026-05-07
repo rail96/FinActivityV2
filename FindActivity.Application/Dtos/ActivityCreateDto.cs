@@ -11,6 +11,8 @@ public class ActivityCreateDto
     public string City { get; set; } = string.Empty;
     public string State { get; set; } = string.Empty;
     public string? AddressPlaceId { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public int Capacity { get; set; }
     public int? MinAge { get; set; }
 }

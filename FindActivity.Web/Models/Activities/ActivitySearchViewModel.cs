@@ -10,6 +10,9 @@ public class ActivitySearchViewModel
     public DateTime? StartUtcFrom { get; set; }
     public DateTime? StartUtcTo { get; set; }
 
+    /// <summary>"list" (default) or "map" — controls whether results render as cards or a Mapbox map.</summary>
+    public string? View { get; set; }
+
     public IReadOnlyList<ActivityListItemDto> Results { get; set; } = Array.Empty<ActivityListItemDto>();
     public IEnumerable<SelectListItem> Categories { get; set; } = Array.Empty<SelectListItem>();
 }

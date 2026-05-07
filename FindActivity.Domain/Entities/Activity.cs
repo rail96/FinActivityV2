@@ -17,6 +17,11 @@ public class Activity
     public string City { get; set; } = string.Empty;
     public string State { get; set; } = string.Empty;
     public string? AddressPlaceId { get; set; }
+
+    /// <summary>Latitude of the activity location, captured from Mapbox autocomplete. Null for activities created before the map view was added.</summary>
+    public double? Latitude { get; set; }
+    /// <summary>Longitude of the activity location, captured from Mapbox autocomplete.</summary>
+    public double? Longitude { get; set; }
     public int Capacity { get; set; }
     public int? MinAge { get; set; }
     public string CreatedByUserId { get; set; } = string.Empty;

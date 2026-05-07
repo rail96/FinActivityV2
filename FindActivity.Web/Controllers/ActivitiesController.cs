@@ -166,6 +166,8 @@ public class ActivitiesController : Controller
             City = model.City,
             State = model.State,
             AddressPlaceId = model.AddressPlaceId,
+            Latitude = model.Latitude,
+            Longitude = model.Longitude,
             Capacity = model.Capacity,
             MinAge = model.MinAge
         }, userId, cancellationToken);
@@ -195,6 +197,8 @@ public class ActivitiesController : Controller
             City = activity.City,
             State = activity.State,
             AddressPlaceId = activity.AddressPlaceId ?? string.Empty,
+            Latitude = activity.Latitude,
+            Longitude = activity.Longitude,
             Capacity = activity.Capacity,
             MinAge = activity.MinAge,
             Categories = await GetCategoriesAsync(cancellationToken)
@@ -253,6 +257,8 @@ public class ActivitiesController : Controller
             City = model.City,
             State = model.State,
             AddressPlaceId = model.AddressPlaceId,
+            Latitude = model.Latitude,
+            Longitude = model.Longitude,
             Capacity = model.Capacity,
             MinAge = model.MinAge
         }, userId, cancellationToken);
