@@ -1,4 +1,5 @@
 using FindActivity.Application.Dtos;
+using FindActivity.Application.Geo;
 using FindActivity.Application.Interfaces;
 using FindActivity.Domain.Entities;
 using FindActivity.Domain.Enums;
@@ -171,6 +172,19 @@ public class ActivityService : IActivityService
         var results = await query
             .OrderBy(a => a.StartUtc)
             .ToListAsync(cancellationToken);
+
+        // Distance filter runs in memory after the SQL query — SQL Server has no built-in haversine
+        // and the result set here is already small (filtered by city/category/date). Activities without
+        // coordinates are excluded when a distance filter is active.
+        if (filters.MaxDistanceKm is { } maxKm)
+        {
+            var centerLat = filters.CenterLat ?? GeoMath.SeattleLat;
+            var centerLng = filters.CenterLng ?? GeoMath.SeattleLng;
+            results = results
+                .Where(a => a.Latitude.HasValue && a.Longitude.HasValue
+                            && GeoMath.DistanceKm(centerLat, centerLng, a.Latitude.Value, a.Longitude.Value) <= maxKm)
+                .ToList();
+        }
 
         return results.Select(a => new ActivityListItemDto
         {

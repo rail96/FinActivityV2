@@ -43,7 +43,8 @@ public class ActivitiesController : Controller
             City = model.City,
             CategoryId = model.CategoryId,
             StartUtcFrom = model.StartUtcFrom,
-            StartUtcTo = model.StartUtcTo
+            StartUtcTo = model.StartUtcTo,
+            MaxDistanceKm = model.MaxDistanceKm
         };
 
         model.Results = await _activityService.SearchAsync(filters, cancellationToken);

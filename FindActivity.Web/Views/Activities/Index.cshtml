@@ -10,7 +10,8 @@
         { "City", Model.City },
         { "CategoryId", Model.CategoryId?.ToString() },
         { "StartUtcFrom", Model.StartUtcFrom?.ToString("o") },
-        { "StartUtcTo", Model.StartUtcTo?.ToString("o") }
+        { "StartUtcTo", Model.StartUtcTo?.ToString("o") },
+        { "MaxDistanceKm", Model.MaxDistanceKm?.ToString() }
     };
 }
 
@@ -26,27 +27,40 @@
     </div>
 </div>
 
-<form method="get" class="row g-3 mb-4">
+<form method="get" class="card card-body mb-4">
     <input type="hidden" asp-for="View" />
-    <div class="col-md-3">
-        <label class="form-label">City</label>
-        <input class="form-control" asp-for="City" />
+    <div class="row g-3">
+        <div class="col-12 col-md-4 col-lg-3">
+            <label class="form-label">City</label>
+            <input class="form-control" asp-for="City" placeholder="e.g. Seattle" />
+        </div>
+        <div class="col-12 col-md-4 col-lg-3">
+            <label class="form-label">Category</label>
+            <select class="form-select" asp-for="CategoryId" asp-items="Model.Categories">
+                <option value="">All</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-4 col-lg-2">
+            <label class="form-label">Distance from Seattle</label>
+            <select class="form-select" asp-for="MaxDistanceKm">
+                <option value="">Any</option>
+                <option value="5">Within 5 km</option>
+                <option value="10">Within 10 km</option>
+                <option value="25">Within 25 km</option>
+                <option value="50">Within 50 km</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <label class="form-label">Start from (UTC)</label>
+            <input class="form-control" type="datetime-local" asp-for="StartUtcFrom" />
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <label class="form-label">Start to (UTC)</label>
+            <input class="form-control" type="datetime-local" asp-for="StartUtcTo" />
+        </div>
     </div>
-    <div class="col-md-3">
-        <label class="form-label">Category</label>
-        <select class="form-select" asp-for="CategoryId" asp-items="Model.Categories">
-            <option value="">All</option>
-        </select>
-    </div>
-    <div class="col-md-3">
-        <label class="form-label">Start from (UTC)</label>
-        <input class="form-control" type="datetime-local" asp-for="StartUtcFrom" />
-    </div>
-    <div class="col-md-3">
-        <label class="form-label">Start to (UTC)</label>
-        <input class="form-control" type="datetime-local" asp-for="StartUtcTo" />
-    </div>
-    <div class="col-md-3 d-flex align-items-end">
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <a class="btn btn-link p-0" asp-action="Index">Clear filters</a>
         <button class="btn btn-primary" type="submit">Search</button>
     </div>
 </form>
