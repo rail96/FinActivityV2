@@ -28,6 +28,14 @@
 
 <h1>@Model.Activity.Title</h1>
 
+@if (!string.IsNullOrWhiteSpace(Model.Activity.CoverImagePath))
+{
+    <div class="mb-3">
+        <img src="@Model.Activity.CoverImagePath" alt="Cover image for @Model.Activity.Title"
+             class="img-fluid rounded" style="max-height: 360px; object-fit: cover; width: 100%;" />
+    </div>
+}
+
 <div class="mb-3">
     <span class="badge bg-secondary">@Model.Activity.Status</span>
     <span class="ms-2">@Model.Activity.CategoryName</span>

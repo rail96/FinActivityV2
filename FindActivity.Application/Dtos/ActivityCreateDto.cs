@@ -15,4 +15,7 @@ public class ActivityCreateDto
     public double? Longitude { get; set; }
     public int Capacity { get; set; }
     public int? MinAge { get; set; }
+
+    /// <summary>Relative URL of the saved cover image, set by the controller after a successful upload.</summary>
+    public string? CoverImagePath { get; set; }
 }

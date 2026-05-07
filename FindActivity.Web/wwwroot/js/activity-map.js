@@ -46,6 +46,20 @@
 
     const addMarker = (lngLat, eventInfo) => {
         const content = document.createElement("div");
+        content.style.maxWidth = "220px";
+
+        if (eventInfo.coverImage) {
+            const img = document.createElement("img");
+            img.src = eventInfo.coverImage;
+            img.alt = "";
+            img.style.width = "100%";
+            img.style.height = "120px";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "4px";
+            img.style.marginBottom = "6px";
+            content.appendChild(img);
+        }
+
         const title = document.createElement("strong");
         title.textContent = eventInfo.title;
         const address = document.createElement("div");
@@ -53,6 +67,8 @@
         const link = document.createElement("a");
         link.href = eventInfo.detailsUrl;
         link.textContent = "View details";
+        link.style.display = "block";
+        link.style.marginTop = "6px";
         content.append(title, address, link);
 
         const popup = new mapboxgl.Popup({ offset: 24 }).setDOMContent(content);

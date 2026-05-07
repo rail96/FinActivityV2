@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace FindActivity.Web.Models.Activities;
@@ -49,6 +50,13 @@ public class ActivityFormViewModel
 
     [Range(1, 5000)]
     public int Capacity { get; set; } = 10;
+
+    /// <summary>Path of the existing cover image (when editing). Round-tripped through a hidden field so it isn't lost when the user doesn't pick a new file.</summary>
+    public string? CoverImagePath { get; set; }
+
+    /// <summary>New file the user picked. Optional: when null, the existing CoverImagePath is preserved.</summary>
+    [Display(Name = "Cover image")]
+    public IFormFile? CoverImageFile { get; set; }
 
     [Range(0, 120)]
     [Display(Name = "Minimum age")]

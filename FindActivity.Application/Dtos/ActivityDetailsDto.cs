@@ -18,6 +18,7 @@ public class ActivityDetailsDto
     public double? Longitude { get; set; }
     public int Capacity { get; set; }
     public int? MinAge { get; set; }
+    public string? CoverImagePath { get; set; }
     public string CreatedByUserId { get; set; } = string.Empty;
     public ActivityStatus Status { get; set; }
     public int JoinedCount { get; set; }

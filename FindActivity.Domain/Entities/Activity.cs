@@ -24,6 +24,12 @@ public class Activity
     public double? Longitude { get; set; }
     public int Capacity { get; set; }
     public int? MinAge { get; set; }
+
+    /// <summary>
+    /// Relative URL of the cover image saved in wwwroot/uploads/activities/, e.g. "/uploads/activities/{guid}.jpg".
+    /// Null when no image has been uploaded.
+    /// </summary>
+    public string? CoverImagePath { get; set; }
     public string CreatedByUserId { get; set; } = string.Empty;
     public ApplicationUser? CreatedByUser { get; set; }
     public ActivityStatus Status { get; set; } = ActivityStatus.Scheduled;

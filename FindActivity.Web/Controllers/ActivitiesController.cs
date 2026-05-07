@@ -18,17 +18,20 @@ public class ActivitiesController : Controller
     private readonly IActivityService _activityService;
     private readonly IAppDbContext _db;
     private readonly INotificationService _notifications;
+    private readonly ActivityImageService _activityImages;
     private readonly ILogger<ActivitiesController> _logger;
 
     public ActivitiesController(
         IActivityService activityService,
         IAppDbContext db,
         INotificationService notifications,
+        ActivityImageService activityImages,
         ILogger<ActivitiesController> logger)
     {
         _activityService = activityService;
         _db = db;
         _notifications = notifications;
+        _activityImages = activityImages;
         _logger = logger;
     }
 
@@ -155,6 +158,20 @@ public class ActivitiesController : Controller
             return Forbid();
         }
 
+        // Save the uploaded cover image (optional). Validation errors get surfaced on the form.
+        string? coverImagePath = null;
+        if (model.CoverImageFile is not null)
+        {
+            var (savedPath, error) = await _activityImages.SaveAsync(model.CoverImageFile, cancellationToken);
+            if (error is not null)
+            {
+                ModelState.AddModelError(nameof(model.CoverImageFile), error);
+                model.Categories = await GetCategoriesAsync(cancellationToken);
+                return View(model);
+            }
+            coverImagePath = savedPath;
+        }
+
         var id = await _activityService.CreateAsync(new ActivityCreateDto
         {
             Title = model.Title,
@@ -169,7 +186,8 @@ public class ActivitiesController : Controller
             Latitude = model.Latitude,
             Longitude = model.Longitude,
             Capacity = model.Capacity,
-            MinAge = model.MinAge
+            MinAge = model.MinAge,
+            CoverImagePath = coverImagePath
         }, userId, cancellationToken);
 
         return RedirectToAction(nameof(Details), new { id });
@@ -201,6 +219,7 @@ public class ActivitiesController : Controller
             Longitude = activity.Longitude,
             Capacity = activity.Capacity,
             MinAge = activity.MinAge,
+            CoverImagePath = activity.CoverImagePath,
             Categories = await GetCategoriesAsync(cancellationToken)
         };
 
@@ -245,6 +264,22 @@ public class ActivitiesController : Controller
             return Forbid();
         }
 
+        // Replace the cover image only when a new file was uploaded; otherwise keep the existing one.
+        string? newCoverPath = null;
+        if (model.CoverImageFile is not null)
+        {
+            var (savedPath, error) = await _activityImages.SaveAsync(model.CoverImageFile, cancellationToken);
+            if (error is not null)
+            {
+                ModelState.AddModelError(nameof(model.CoverImageFile), error);
+                model.Categories = await GetCategoriesAsync(cancellationToken);
+                return View(model);
+            }
+            newCoverPath = savedPath;
+            // Best-effort delete of the old image now that we've saved a new one.
+            _activityImages.TryDelete(model.CoverImagePath);
+        }
+
         var updated = await _activityService.UpdateAsync(new ActivityEditDto
         {
             Id = model.Id.Value,
@@ -260,7 +295,9 @@ public class ActivitiesController : Controller
             Latitude = model.Latitude,
             Longitude = model.Longitude,
             Capacity = model.Capacity,
-            MinAge = model.MinAge
+            MinAge = model.MinAge,
+            // Pass the new path when uploaded; null tells the service to keep the existing value.
+            CoverImagePath = newCoverPath
         }, userId, cancellationToken);
 
         if (!updated)
