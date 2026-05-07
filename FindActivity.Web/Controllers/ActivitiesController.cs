@@ -6,6 +6,7 @@ using FindActivity.Domain.Entities;
 using FindActivity.Domain.Enums;
 using FindActivity.Web.Models.Activities;
 using FindActivity.Web.Services;
+using FindActivity.Web.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -141,6 +142,12 @@ public class ActivitiesController : Controller
             ModelState.AddModelError(nameof(model.Address), "Select an address from the suggested results.");
         }
 
+        // Geofence: reject activities outside the Greater Seattle area regardless of how the form was submitted.
+        if (!SeattleGeofence.IsInside(model.Latitude, model.Longitude))
+        {
+            ModelState.AddModelError(nameof(model.Address), "Activities must be within the Greater Seattle area.");
+        }
+
         if (model.StartUtc <= DateTime.UtcNow)
         {
             ModelState.AddModelError(nameof(model.StartUtc), "Start time must be in the future.");
@@ -234,6 +241,12 @@ public class ActivitiesController : Controller
         if (string.IsNullOrWhiteSpace(model.AddressPlaceId))
         {
             ModelState.AddModelError(nameof(model.Address), "Select an address from the suggested results.");
+        }
+
+        // Geofence: reject activities outside the Greater Seattle area regardless of how the form was submitted.
+        if (!SeattleGeofence.IsInside(model.Latitude, model.Longitude))
+        {
+            ModelState.AddModelError(nameof(model.Address), "Activities must be within the Greater Seattle area.");
         }
 
         if (model.StartUtc <= DateTime.UtcNow)
