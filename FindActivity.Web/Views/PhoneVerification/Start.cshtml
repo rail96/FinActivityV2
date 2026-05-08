@@ -1,0 +1,23 @@
+@model FindActivity.Web.Models.PhoneVerification.PhoneStartViewModel
+@{
+    ViewData["Title"] = "Verify your phone";
+}
+
+<h1>Verify your phone</h1>
+
+<p class="text-muted">We'll send you a 6-digit code via SMS. Enter your number in international format, e.g. <code>+12065551234</code>.</p>
+
+<form method="post" class="col-md-6">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label class="form-label" asp-for="PhoneNumber"></label>
+        <input class="form-control" asp-for="PhoneNumber" autocomplete="tel" placeholder="+12065551234" />
+        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+    </div>
+    <button class="btn btn-primary" type="submit">Send code</button>
+    <a class="btn btn-link" asp-controller="Profile" asp-action="Details">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

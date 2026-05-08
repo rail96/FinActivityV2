@@ -20,6 +20,10 @@ public class ActivityDetailsDto
     public int? MinAge { get; set; }
     public string? CoverImagePath { get; set; }
     public string CreatedByUserId { get; set; } = string.Empty;
+
+    /// <summary>True if the host has verified their phone number — drives the "Verified" badge in the UI.</summary>
+    public bool HostPhoneVerified { get; set; }
+
     public ActivityStatus Status { get; set; }
     public int JoinedCount { get; set; }
     public int WaitlistedCount { get; set; }

@@ -41,6 +41,10 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 // Higher-level activity notifications (RSVP, cancellation, reminders).
 builder.Services.AddTransient<INotificationService, NotificationService>();
 
+// Twilio Verify for phone number verification (OTP via SMS).
+builder.Services.Configure<PhoneVerificationOptions>(builder.Configuration.GetSection("Twilio"));
+builder.Services.AddTransient<IPhoneVerificationService, TwilioPhoneVerificationService>();
+
 // Saves and removes uploaded cover images for activities.
 builder.Services.AddTransient<ActivityImageService>();
 

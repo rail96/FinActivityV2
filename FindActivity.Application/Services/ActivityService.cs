@@ -80,6 +80,7 @@ public class ActivityService : IActivityService
     {
         var activity = await _db.Activities
             .Include(a => a.Category)
+            .Include(a => a.CreatedByUser)
             .Include(a => a.Participants)
             .ThenInclude(p => p.User)
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
@@ -130,6 +131,7 @@ public class ActivityService : IActivityService
             MinAge = activity.MinAge,
             CoverImagePath = activity.CoverImagePath,
             CreatedByUserId = activity.CreatedByUserId,
+            HostPhoneVerified = activity.CreatedByUser?.PhoneNumberConfirmed ?? false,
             Status = activity.Status,
             JoinedCount = joinedCount,
             WaitlistedCount = waitlistedCount,
