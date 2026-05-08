@@ -6,6 +6,10 @@
 FindActivity.Web/wwwroot/uploads/activities/*
 !FindActivity.Web/wwwroot/uploads/activities/.gitkeep
 
+# Uploaded user avatars
+FindActivity.Web/wwwroot/uploads/avatars/*
+!FindActivity.Web/wwwroot/uploads/avatars/.gitkeep
+
 # User-specific files
 *.suo
 *.user

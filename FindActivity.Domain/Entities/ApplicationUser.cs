@@ -11,6 +11,12 @@ public class ApplicationUser : IdentityUser
     public int RatingCount { get; set; }
 
     /// <summary>
+    /// Relative URL of the saved avatar in wwwroot/uploads/avatars/, e.g. "/uploads/avatars/{guid}.jpg".
+    /// Null when the user hasn't uploaded one yet.
+    /// </summary>
+    public string? AvatarPath { get; set; }
+
+    /// <summary>
     /// If set and in the future, the user is suspended (cannot sign in) until this UTC moment.
     /// Set by moderators on the admin dashboard. <c>null</c> means the account is in good standing.
     /// </summary>

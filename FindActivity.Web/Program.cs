@@ -48,6 +48,9 @@ builder.Services.AddTransient<IPhoneVerificationService, TwilioPhoneVerification
 // Saves and removes uploaded cover images for activities.
 builder.Services.AddTransient<ActivityImageService>();
 
+// Saves and removes uploaded user avatars.
+builder.Services.AddTransient<AvatarImageService>();
+
 // Sends a reminder email ~24 hours before each scheduled activity starts.
 builder.Services.AddHostedService<ActivityReminderService>();
 // Ensures the Admin role exists, and promotes Admin:BootstrapEmail (if set) to Admin on startup.

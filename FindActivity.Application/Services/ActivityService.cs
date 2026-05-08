@@ -423,6 +423,7 @@ public class ActivityService : IActivityService
             Bio = user?.Bio,
             RatingAvg = user?.RatingAvg ?? 0,
             RatingCount = user?.RatingCount ?? 0,
+            AvatarPath = user?.AvatarPath,
             Status = participant.Status
         };
     }

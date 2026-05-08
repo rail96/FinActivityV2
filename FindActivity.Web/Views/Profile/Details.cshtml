@@ -26,13 +26,41 @@
     var isOwnProfile = currentUserId is not null && Model.User.Id == currentUserId;
 }
 
-<h1 class="d-flex align-items-center gap-2">
-    <span>@(Model.User.DisplayName ?? Model.User.UserName)</span>
-    @if (Model.User.PhoneNumberConfirmed)
+@{
+    var profileInitial = string.IsNullOrWhiteSpace(Model.User.DisplayName)
+        ? (Model.User.UserName ?? "?").Substring(0, 1).ToUpperInvariant()
+        : Model.User.DisplayName.Substring(0, 1).ToUpperInvariant();
+}
+
+<div class="d-flex align-items-center gap-3 flex-wrap mb-3">
+    <span class="fa-avatar fa-avatar-lg">
+        @if (!string.IsNullOrWhiteSpace(Model.User.AvatarPath))
+        {
+            <img src="@Model.User.AvatarPath" alt="@Model.User.DisplayName" />
+        }
+        else
+        {
+            @profileInitial
+        }
+    </span>
+    <div class="flex-grow-1">
+        <h1 class="d-flex align-items-center gap-2 mb-1">
+            <span>@(Model.User.DisplayName ?? Model.User.UserName)</span>
+            @if (Model.User.PhoneNumberConfirmed)
+            {
+                <span class="badge bg-success" title="Phone verified">&#10003; Verified</span>
+            }
+        </h1>
+        @if (Model.User.RatingCount > 0)
+        {
+            <div class="text-muted small">@Model.User.RatingAvg.ToString("0.0") &middot; @Model.User.RatingCount review@(Model.User.RatingCount == 1 ? "" : "s")</div>
+        }
+    </div>
+    @if (isOwnProfile)
     {
-        <span class="badge bg-success" title="Phone verified">&#10003; Verified</span>
+        <a class="btn btn-outline-primary rounded-pill" asp-action="Edit">Edit profile</a>
     }
-</h1>
+</div>
 
 @if (isOwnProfile && !Model.User.PhoneNumberConfirmed)
 {
