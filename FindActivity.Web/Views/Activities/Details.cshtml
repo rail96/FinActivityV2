@@ -103,8 +103,23 @@
                         var ratingLabel = participant.RatingCount == 0
                             ? "No ratings yet"
                             : $"{participant.RatingAvg:0.0} ({participant.RatingCount})";
+                        var participantInitial = string.IsNullOrWhiteSpace(participant.DisplayName) ? "?" : participant.DisplayName.Substring(0, 1).ToUpperInvariant();
                         <tr>
-                            <td>@participant.DisplayName</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fa-avatar fa-avatar-sm">
+                                        @if (!string.IsNullOrWhiteSpace(participant.AvatarPath))
+                                        {
+                                            <img src="@participant.AvatarPath" alt="" />
+                                        }
+                                        else
+                                        {
+                                            @participantInitial
+                                        }
+                                    </span>
+                                    <span>@participant.DisplayName</span>
+                                </div>
+                            </td>
                             <td>@ratingLabel</td>
                             <td>@(string.IsNullOrWhiteSpace(participant.Bio) ? "—" : participant.Bio)</td>
                             <td>
