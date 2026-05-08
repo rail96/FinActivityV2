@@ -157,7 +157,7 @@
     }
 }
 
-<div class="d-flex gap-2">
+<div class="d-flex flex-wrap gap-2">
     @if (User.Identity?.IsAuthenticated == true)
     {
         if (Model.IsCreator && Model.Activity.Status == FindActivity.Domain.Enums.ActivityStatus.Scheduled)
