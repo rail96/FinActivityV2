@@ -1,0 +1,275 @@
+/* FindActivity brand styles. Layered on top of Bootstrap; this file only adds/overrides where needed. */
+
+:root {
+    --fa-primary: #15a560;
+    --fa-primary-hover: #0f8a4f;
+    --fa-primary-soft: #e6f6ee;
+    --fa-text: #111827;
+    --fa-text-muted: #6b7280;
+    --fa-border: #e5e7eb;
+    --fa-bg-soft: #f9fafb;
+    --fa-card-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.05);
+    --fa-card-radius: 14px;
+    --fa-input-radius: 12px;
+}
+
+body {
+    color: var(--fa-text);
+    background: var(--fa-bg-soft);
+}
+
+/* Brand color overrides for Bootstrap components. */
+.btn-primary {
+    background-color: var(--fa-primary);
+    border-color: var(--fa-primary);
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+    background-color: var(--fa-primary-hover);
+    border-color: var(--fa-primary-hover);
+}
+.btn-success {
+    background-color: var(--fa-primary);
+    border-color: var(--fa-primary);
+}
+.btn-success:hover, .btn-success:focus, .btn-success:active {
+    background-color: var(--fa-primary-hover);
+    border-color: var(--fa-primary-hover);
+}
+.btn-outline-primary {
+    color: var(--fa-primary);
+    border-color: var(--fa-primary);
+}
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+    background-color: var(--fa-primary);
+    border-color: var(--fa-primary);
+    color: #fff;
+}
+a {
+    color: var(--fa-primary);
+}
+a:hover {
+    color: var(--fa-primary-hover);
+}
+
+/* Branded badge variants. */
+.badge.bg-success {
+    background-color: var(--fa-primary) !important;
+}
+
+/* Navbar — cleaner separator and brand color. */
+.navbar.bg-white {
+    border-bottom: 1px solid var(--fa-border) !important;
+    box-shadow: none !important;
+}
+.navbar-brand {
+    font-weight: 700;
+    color: var(--fa-primary) !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.navbar-brand .brand-pin {
+    width: 22px;
+    height: 22px;
+    color: var(--fa-primary);
+    flex-shrink: 0;
+}
+.navbar .nav-link {
+    color: var(--fa-text-muted) !important;
+    font-weight: 500;
+}
+.navbar .nav-link:hover {
+    color: var(--fa-primary) !important;
+}
+.navbar .nav-item .nav-link.active,
+.navbar .nav-item.active .nav-link {
+    color: var(--fa-primary) !important;
+}
+
+/* Avatar circle used for the navbar profile button + reused on profile/participants pages. */
+.fa-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--fa-primary-soft);
+    color: var(--fa-primary);
+    font-weight: 600;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    overflow: hidden;
+    border: 1px solid var(--fa-border);
+    flex-shrink: 0;
+}
+.fa-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.fa-avatar.fa-avatar-lg { width: 64px; height: 64px; font-size: 1.5rem; }
+.fa-avatar.fa-avatar-sm { width: 28px; height: 28px; font-size: 0.8rem; }
+
+/* Cards — softer shadow + bigger radius. */
+.card {
+    border: 1px solid var(--fa-border);
+    border-radius: var(--fa-card-radius);
+    box-shadow: var(--fa-card-shadow);
+}
+.card-img-top {
+    border-top-left-radius: var(--fa-card-radius);
+    border-top-right-radius: var(--fa-card-radius);
+}
+
+/* Form inputs. */
+.form-control, .form-select {
+    border-radius: var(--fa-input-radius);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--fa-primary);
+    box-shadow: 0 0 0 0.15rem rgba(21, 165, 96, 0.18);
+}
+
+/* Hero block on the Activities discover page. */
+.fa-hero {
+    background-color: #d8e9f0;
+    background-image:
+        linear-gradient(180deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.55) 75%, rgba(249,250,251,1) 100%),
+        url("/img/seattle-hero.png"),
+        url("/img/seattle-hero.jpg"),
+        linear-gradient(135deg, #c9e4f0 0%, #e9f6ee 60%, #ffffff 100%);
+    background-position: center 35%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: var(--fa-card-radius);
+    padding: 36px 32px;
+    margin-bottom: 24px;
+    position: relative;
+    min-height: 220px;
+}
+.fa-hero h1 {
+    margin: 0;
+    font-weight: 700;
+    color: var(--fa-text);
+}
+.fa-hero p {
+    color: var(--fa-text-muted);
+    margin: 8px 0 0 0;
+}
+.fa-hero .fa-hero-actions {
+    margin-top: 24px;
+}
+
+/* Segmented List/Map toggle inside the hero. */
+.fa-view-toggle {
+    background: #fff;
+    border-radius: 999px;
+    padding: 4px;
+    border: 1px solid var(--fa-border);
+    display: inline-flex;
+    box-shadow: var(--fa-card-shadow);
+}
+.fa-view-toggle .btn {
+    border-radius: 999px;
+    border: none;
+    padding: 6px 18px;
+    font-weight: 500;
+    color: var(--fa-text-muted);
+}
+.fa-view-toggle .btn.fa-active {
+    background: var(--fa-primary);
+    color: #fff;
+}
+
+/* Search filter card. */
+.fa-filter-card {
+    background: #fff;
+    border-radius: var(--fa-card-radius);
+    border: 1px solid var(--fa-border);
+    box-shadow: var(--fa-card-shadow);
+    padding: 20px 22px;
+    margin-bottom: 24px;
+}
+.fa-filter-card .form-label {
+    font-size: 0.85rem;
+    color: var(--fa-text-muted);
+    font-weight: 500;
+}
+
+/* Activity list rows on the discover page. */
+.fa-activity-list {
+    background: #fff;
+    border: 1px solid var(--fa-border);
+    border-radius: var(--fa-card-radius);
+    overflow: hidden;
+    box-shadow: var(--fa-card-shadow);
+}
+.fa-activity-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 18px;
+    border-top: 1px solid var(--fa-border);
+}
+.fa-activity-row:first-child {
+    border-top: none;
+}
+.fa-activity-row .fa-thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--fa-bg-soft);
+}
+.fa-activity-row .fa-title {
+    font-weight: 600;
+    color: var(--fa-text);
+    text-decoration: none;
+}
+.fa-activity-row .fa-title:hover {
+    color: var(--fa-primary);
+}
+.fa-activity-row .fa-meta {
+    color: var(--fa-text-muted);
+    font-size: 0.875rem;
+}
+.fa-activity-row .fa-grow {
+    flex: 1;
+    min-width: 0;
+}
+.fa-activity-row .fa-cell {
+    color: var(--fa-text);
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+.fa-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--fa-primary-soft);
+    color: var(--fa-primary);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.fa-status-pill::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--fa-primary);
+}
+
+/* Stack on phones. */
+@media (max-width: 767.98px) {
+    .fa-activity-row {
+        flex-wrap: wrap;
+    }
+    .fa-activity-row .fa-cell { width: 50%; }
+}
+
+/* Footer — denser, neutral. */
+.footer {
+    background: transparent;
+}

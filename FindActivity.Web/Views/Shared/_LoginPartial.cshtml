@@ -3,25 +3,52 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
-<ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-    </li>
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
-    </li>
+    var user = await UserManager.GetUserAsync(User);
+    var displayName = user?.DisplayName ?? user?.UserName ?? "Account";
+    // Single-letter fallback used as the avatar placeholder until profile pictures land.
+    var initial = string.IsNullOrWhiteSpace(displayName) ? "?" : displayName.Trim().Substring(0, 1).ToUpperInvariant();
+    var profileUrl = Url.Action("Details", "Profile", new { id = user?.Id });
+
+    <div class="d-flex align-items-center gap-3">
+        <a class="btn btn-success rounded-pill px-3" asp-controller="Activities" asp-action="Create">+ Create activity</a>
+
+        <div class="dropdown">
+            <a class="d-inline-flex align-items-center text-decoration-none gap-2"
+               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="fa-avatar" title="@displayName">@initial</span>
+                <span class="text-muted small d-none d-sm-inline">&#x25BE;</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><span class="dropdown-item-text small text-muted">Signed in as<br><strong>@displayName</strong></span></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="@profileUrl">My profile</a></li>
+                <li><a class="dropdown-item" asp-controller="Activities" asp-action="MyHosted">My hosted</a></li>
+                <li><a class="dropdown-item" asp-controller="Activities" asp-action="MyParticipating">My participating</a></li>
+                @if (User.IsInRole("Admin"))
+                {
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">Admin dashboard</a></li>
+                }
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" class="px-3 py-1">
+                        <button class="btn btn-link p-0 text-decoration-none" type="submit">Sign out</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
 }
 else
 {
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="btn btn-success rounded-pill px-3 ms-2" asp-area="Identity" asp-page="/Account/Login">Log in</a>
+        </li>
+    </ul>
 }
-</ul>
