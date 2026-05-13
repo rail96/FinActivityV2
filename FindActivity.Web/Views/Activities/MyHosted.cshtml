@@ -134,6 +134,7 @@ else
                         {
                             <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@activity.Id">Edit</a>
                         }
+                        <a class="btn btn-sm btn-outline-secondary" asp-action="Duplicate" asp-route-id="@activity.Id">Duplicate</a>
                         @if (canCancel)
                         {
                             <form asp-action="Cancel" asp-route-id="@activity.Id" method="post" class="d-inline">

@@ -33,18 +33,22 @@ public class ProfileController : Controller
             return NotFound();
         }
 
-        var reviews = await _db.Reviews
-            .Where(r => r.RevieweeUserId == userId)
-            .OrderByDescending(r => r.CreatedUtc)
-            .Select(r => new ProfileDetailsViewModel.ReviewSummary
-            {
-                ActivityId = r.ActivityId,
-                Rating = r.Rating,
-                Comment = r.Comment,
-                ReviewerUserId = r.ReviewerUserId,
-                CreatedUtc = r.CreatedUtc
-            })
-            .ToListAsync(cancellationToken);
+        // Join to AspNetUsers so each review carries the reviewer's display name + avatar for inline rendering.
+        var reviews = await (from r in _db.Reviews
+                             where r.RevieweeUserId == userId
+                             join u in _db.Users on r.ReviewerUserId equals u.Id into reviewerJoin
+                             from reviewer in reviewerJoin.DefaultIfEmpty()
+                             orderby r.CreatedUtc descending
+                             select new ProfileDetailsViewModel.ReviewSummary
+                             {
+                                 ActivityId = r.ActivityId,
+                                 Rating = r.Rating,
+                                 Comment = r.Comment,
+                                 ReviewerUserId = r.ReviewerUserId,
+                                 ReviewerDisplayName = reviewer != null ? (reviewer.DisplayName ?? reviewer.UserName) : null,
+                                 ReviewerAvatarPath = reviewer != null ? reviewer.AvatarPath : null,
+                                 CreatedUtc = r.CreatedUtc
+                             }).ToListAsync(cancellationToken);
 
         return View(new ProfileDetailsViewModel
         {

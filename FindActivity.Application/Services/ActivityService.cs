@@ -131,6 +131,8 @@ public class ActivityService : IActivityService
             MinAge = activity.MinAge,
             CoverImagePath = activity.CoverImagePath,
             CreatedByUserId = activity.CreatedByUserId,
+            HostDisplayName = activity.CreatedByUser?.DisplayName ?? activity.CreatedByUser?.UserName,
+            HostAvatarPath = activity.CreatedByUser?.AvatarPath,
             HostPhoneVerified = activity.CreatedByUser?.PhoneNumberConfirmed ?? false,
             Status = activity.Status,
             JoinedCount = joinedCount,

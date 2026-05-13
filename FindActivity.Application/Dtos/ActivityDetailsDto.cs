@@ -21,6 +21,9 @@ public class ActivityDetailsDto
     public string? CoverImagePath { get; set; }
     public string CreatedByUserId { get; set; } = string.Empty;
 
+    public string? HostDisplayName { get; set; }
+    public string? HostAvatarPath { get; set; }
+
     /// <summary>True if the host has verified their phone number — drives the "Verified" badge in the UI.</summary>
     public bool HostPhoneVerified { get; set; }
 

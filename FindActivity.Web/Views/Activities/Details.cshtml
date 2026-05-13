@@ -64,11 +64,28 @@
     <dd class="col-sm-9">@(Model.Activity.MinAge?.ToString() ?? "None")</dd>
     <dt class="col-sm-3">Host</dt>
     <dd class="col-sm-9">
-        <a asp-controller="Profile" asp-action="Details" asp-route-id="@Model.Activity.CreatedByUserId">View profile</a>
-        @if (Model.Activity.HostPhoneVerified)
-        {
-            <span class="badge bg-success ms-2" title="Host has verified their phone">&#10003; Verified</span>
+        @{
+            var hostName = Model.Activity.HostDisplayName ?? "Host";
+            var hostInitial = string.IsNullOrWhiteSpace(hostName) ? "?" : hostName.Substring(0, 1).ToUpperInvariant();
         }
+        <a asp-controller="Profile" asp-action="Details" asp-route-id="@Model.Activity.CreatedByUserId"
+           class="d-inline-flex align-items-center gap-2 text-decoration-none text-reset">
+            <span class="fa-avatar fa-avatar-sm">
+                @if (!string.IsNullOrWhiteSpace(Model.Activity.HostAvatarPath))
+                {
+                    <img src="@Model.Activity.HostAvatarPath" alt="@hostName" />
+                }
+                else
+                {
+                    @hostInitial
+                }
+            </span>
+            <span>@hostName</span>
+            @if (Model.Activity.HostPhoneVerified)
+            {
+                <span class="badge bg-success" title="Host has verified their phone">&#10003; Verified</span>
+            }
+        </a>
     </dd>
 </dl>
 
@@ -178,6 +195,7 @@
         if (Model.IsCreator && Model.Activity.Status == FindActivity.Domain.Enums.ActivityStatus.Scheduled)
         {
             <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Activity.Id">Edit</a>
+            <a class="btn btn-outline-secondary" asp-action="Duplicate" asp-route-id="@Model.Activity.Id">Duplicate</a>
             <form asp-action="Cancel" asp-route-id="@Model.Activity.Id" method="post">
                 <button class="btn btn-outline-danger" type="submit">Cancel activity</button>
             </form>
@@ -187,6 +205,10 @@
                     <button class="btn btn-outline-success" type="submit">Mark complete</button>
                 </form>
             }
+        }
+        else if (Model.IsCreator)
+        {
+            <a class="btn btn-outline-secondary" asp-action="Duplicate" asp-route-id="@Model.Activity.Id">Duplicate</a>
         }
         else if (Model.Activity.Status == FindActivity.Domain.Enums.ActivityStatus.Scheduled)
         {
