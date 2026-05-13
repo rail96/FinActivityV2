@@ -7,6 +7,11 @@
 
 <h1>Create Activity</h1>
 
+@if (TempData["DuplicateNotice"] is string duplicateNotice)
+{
+    <div class="alert alert-info" role="alert">@duplicateNotice</div>
+}
+
 <form asp-action="Create" method="post" enctype="multipart/form-data">
     <div class="row g-3">
         <div class="col-md-6">

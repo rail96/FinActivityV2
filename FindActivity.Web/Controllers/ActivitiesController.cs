@@ -133,6 +133,47 @@ public class ActivitiesController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// Loads an existing activity and returns the Create view prefilled with its data, so the host can
+    /// quickly create a similar activity (most often a future instance of a past event). Cover image and
+    /// lat/lng are carried over; StartUtc resets to ~1 day from now so it isn't in the past on submit.
+    /// </summary>
+    [Authorize]
+    public async Task<IActionResult> Duplicate(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null) return Forbid();
+
+        var source = await _activityService.GetDetailsAsync(id, userId, cancellationToken);
+        if (source is null || source.CreatedByUserId != userId)
+        {
+            return NotFound();
+        }
+
+        var model = new ActivityFormViewModel
+        {
+            // Id intentionally left null: this becomes a brand new activity on POST.
+            Title = source.Title,
+            Description = source.Description,
+            CategoryId = await GetCategoryIdAsync(id, cancellationToken),
+            StartUtc = DateTime.UtcNow.AddDays(1),
+            DurationMinutes = source.DurationMinutes,
+            Address = source.Address,
+            City = source.City,
+            State = source.State,
+            AddressPlaceId = source.AddressPlaceId ?? string.Empty,
+            Latitude = source.Latitude,
+            Longitude = source.Longitude,
+            Capacity = source.Capacity,
+            MinAge = source.MinAge,
+            // Cover image carries over by reference; a separate upload on the form can replace it.
+            Categories = await GetCategoriesAsync(cancellationToken)
+        };
+
+        TempData["DuplicateNotice"] = "Duplicated from a previous activity — review details and adjust the start time before saving.";
+        return View("Create", model);
+    }
+
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]

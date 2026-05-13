@@ -13,6 +13,8 @@ public class ProfileDetailsViewModel
         public int Rating { get; set; }
         public string Comment { get; set; } = string.Empty;
         public string ReviewerUserId { get; set; } = string.Empty;
+        public string? ReviewerDisplayName { get; set; }
+        public string? ReviewerAvatarPath { get; set; }
         public DateTime CreatedUtc { get; set; }
     }
 }
